@@ -1,0 +1,25 @@
+function [X,its] = tRK(A,B,X0,T)
+    %record number of row slices
+    m = size(A,1);
+
+    %initialize iterate
+    X = X0;
+    its = {X};
+
+    %iterate
+    for t = 1:T
+        %sample row slice
+        i_t = randsample(m,1);
+        A_slice = A(i_t,:,:);
+        B_slice = B(i_t,:,:);
+
+        %calculate necessary transformations of A_slice
+        A_slice_t = tran(A_slice);
+        A_prod_inv = tinv(tprod(A_slice,A_slice_t));
+        resid = tprod(A_slice,X) - B_slice;
+
+        %RK step
+        X = X - tprod(tprod(A_slice_t,A_prod_inv),resid);
+        its{end+1} = X;
+    end
+end
