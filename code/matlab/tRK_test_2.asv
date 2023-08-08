@@ -1,0 +1,64 @@
+addpath('tproduct toolbox 2.0 (transform)/')
+
+%% 
+
+l = 5;
+p = 7;
+n = 10;
+k = 13;
+m = 12;
+
+%generate tensors
+A = randn(m,l,n);
+X_true = randn(l,p,n);
+
+%generate consistent measurements
+B = tprod(A,X_true);
+
+%%
+
+%run some iterations of tRK
+num_its = 1000;
+[~,its] = tRK(A,B,randn(l,p,n),num_its);
+
+%record errors
+errs = [];
+for j = 1:num_its+1
+    est = its{j} - X_true;
+    errs = [errs,norm(est(:))];
+end
+
+%plot errors vs iterations
+semilogy(errs)
+
+%% T-Product
+
+m_2 = 13;
+m_1 = 5;
+p = 7;
+n = 10;
+m = 14;
+
+X_true = randn(m_1,n,p);
+U = randn(m, m_2,p);
+V = randn(m_2,m_1,p);
+
+W=tprod(U,V);
+
+X_0 = randn(m_1,n,p);
+
+Y_true = tprod(W, X_true);
+
+[~,its_X,its_Z] = tRK_f_prod(U,V,Y_true,X_0,5000);
+
+errs = [];
+for j = 1:num_its+1
+    est = its_X{j} - X_true;
+    errs = [errs,norm(est(:))];
+end
+
+%plot errors vs iterations
+semilogy(errs)
+hold on
+title('whatever')
+
