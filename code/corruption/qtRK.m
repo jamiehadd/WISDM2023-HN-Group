@@ -1,4 +1,4 @@
-function [X,its] = qRK(A,B,X0,T)
+function [X,its] = qRK(A,B,X0,T, qv)
     %record number of row slices
     m = size(A,1);
     %initialize iterate
@@ -32,7 +32,7 @@ function [X,its] = qRK(A,B,X0,T)
             end
         end
         q = q/m; %Percentile of our selected slice
-        if q > 1
+        if q > qv
             display(['Iteration: ', num2str(t), ' -- Skipping slice ', num2str(i_t), ', q = ', num2str(q)]);
         else
             %RK step
