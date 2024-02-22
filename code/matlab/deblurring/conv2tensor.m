@@ -36,7 +36,7 @@ H = zeros(n,n1,m);
 
 
 for i = 1:m
-    temp = circulant(h2(m-i+1,:)',1);
+    temp = circulant(h2(m-i+1,:)');%,1);
     H(:,:,i) = temp(:,1:n1);    
 end
 
