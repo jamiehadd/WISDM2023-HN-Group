@@ -1,4 +1,4 @@
-function [X,errs,res_errs,ln_errs,res_ln_errs] = tRGS_err(A,B,X0,T,X_true,X_LN)
+function [errs,res_errs,ln_errs,res_ln_errs] = block_tRGS_err(A,B,X0,T,X_true,X_LN,block_size)
     %record number of row slices
     [m,l,n] = size(A);
     errs = [];
@@ -20,20 +20,19 @@ function [X,errs,res_errs,ln_errs,res_ln_errs] = tRGS_err(A,B,X0,T,X_true,X_LN)
     %iterate
     for t = 1:T
         %sample column slice
-        i_t = randsample(l,1);
-        A_slice = A(:,i_t,:);
+        tau = randsample(l,block_size);
+        A_tau = A(:,tau,:);
         I = eye(l,l);
-        E = zeros(l,1,n);
-        E(:,:,1)=I(:,i_t);
+        E = zeros(l,block_size,n);
+        E(:,:,1)=I(:,tau);
 
 
         %calculate necessary transformations of A_slice
-        A_slice_t = tran(A_slice);
-        A_prod_inv = tinv(tprod(A_slice_t,A_slice));
+        A_tau_pinv = tpinv(A_tau);
         resid = B - tprod(A,X);
 
         %RGS step
-        X = X + tprod(tprod(E,tprod(A_prod_inv,A_slice_t)),resid);
+        X = X + tprod(E,tprod(A_tau_pinv,resid));
         est = X - X_true;
         ln_est = X - X_LN;
         res_est = tprod(A,est);
