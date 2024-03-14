@@ -1,13 +1,23 @@
-function [X,its_X,its_Z] = tRK_t_prod(U,V,Y,X_0,T)
+function [X,in_errs,in_res_errs,out_errs,out_res_errs] = facTRK_err(U,V,Y,X_0,Z_true,X_true,T)
     %record number of row slices
     m = size(U,1);
     m_2 = size(V,1);
+    in_errs = [];
+    in_res_errs = [];
+    out_errs = [];
+    out_res_errs = [];
 
     %initialize iterate
     X = X_0;
     Z = tprod(V,X_0);
-    its_X = {X};
-    its_Z = {Z};
+    out_est = Z - Z_true;
+    in_est = X - X_true;
+    out_res_est = tprod(U,out_est);
+    in_res_est = tprod(tprod(U,V),in_est);
+    in_errs = [in_errs, norm(in_est(:))];
+    out_errs = [out_errs, norm(out_est(:))];
+    in_res_errs = [in_res_errs, norm(in_res_est(:))];
+    out_res_errs = [out_res_errs, norm(out_res_est(:))];
 
     %iterate
     for t = 1:T
@@ -23,7 +33,6 @@ function [X,its_X,its_Z] = tRK_t_prod(U,V,Y,X_0,T)
 
         %RK step 
         Z = Z - tprod(tprod(U_slice_t,U_prod_inv),resid_y);
-        its_Z{end+1} = Z;
 
         %sample row slice from V to update X in terms of Z residuals
         i_t = randsample(m_2,1);
@@ -38,6 +47,14 @@ function [X,its_X,its_Z] = tRK_t_prod(U,V,Y,X_0,T)
 
         %RK step 
         X = X - tprod(tprod(V_slice_t,V_prod_inv),resid_z);
-        its_X{end+1} = X;
+
+        out_est = Z - Z_true;
+        in_est = X - X_true;
+        out_res_est = tprod(U,out_est);
+        in_res_est = tprod(tprod(U,V),in_est);
+        in_errs = [in_errs, norm(in_est(:))];
+        out_errs = [out_errs, norm(out_est(:))];
+        in_res_errs = [in_res_errs, norm(in_res_est(:))];
+        out_res_errs = [out_res_errs, norm(out_res_est(:))];
     end
 end

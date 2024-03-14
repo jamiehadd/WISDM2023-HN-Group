@@ -1,0 +1,384 @@
+\documentclass[10.5pt]{amsart}
+\usepackage{graphicx,fullpage,xcolor,comment,bm} % Required for inserting images
+\usepackage{amsmath,amsfonts}
+\usepackage[margin=1in, top = 0.7in]{geometry}
+\usepackage[english]{babel}
+\usepackage{amsthm}
+
+\usepackage{algorithm}
+\usepackage{textcomp}
+\usepackage{algpseudocode}
+\usepackage{bbm}
+\usepackage[shortlabels]{enumitem}
+\usepackage{wrapfig}
+
+
+\graphicspath{{images/}}
+\newtheorem{PropProb}{Proposed Problem}
+\newtheorem{SubProb}{Subproblem}
+\newtheorem{theorem}{Theorem}
+\newtheorem{fact}{Fact}
+\newtheorem{lemma}{Lemma}
+\newtheorem{conjecture}{Conjecture}
+\newcommand{\E}{\mathbb{E}}
+\newtheorem{proposition}{Proposition}
+\newtheorem{question}{Question}
+
+% add a comment environment for yourself!
+\newcommand{\dn}[1]{\textcolor{magenta}{#1 --dn}}
+\newcommand{\jh}[1]{\textcolor{blue}{#1 --jh}}
+\newcommand{\pa}[1]{\textcolor{red}{#1 --ph}}
+\newcommand{\sh}[1]{\textcolor{brown}{#1 -- ss}}
+\newcommand{\ir}[1]{\textcolor{orange}{#1 -- ir}}
+
+
+% Tensor
+%\DeclareMathAlphabet\EuScript{U}{eus}{b}{n}
+%\SetMathAlphabet\EuScript{bold}{U}{eus}{b}{n}
+%\newcommand{\tens}[1]{\EuScript{#1}}
+\newcommand{\tens}[1]{\bm{\mathcal{#1}}}
+\newcommand{\mat}[1]{\bm{#1}}
+\def\tA{{\tens{A}}}  % usually use this for the measurement operator tensor (e.g., *A* X = B)
+\def\tB{{\tens{B}}}  % usually use this for the measurements tensor (e.g., A X = *B*)
+\def\tC{{\tens{C}}}
+\def\tD{{\tens{D}}}
+\def\tE{{\tens{E}}}
+\def\tF{{\tens{F}}}
+\def\tG{{\tens{G}}}
+\def\tH{{\tens{H}}}
+\def\tI{{\tens{I}}}
+\def\tJ{{\tens{J}}}
+\def\tK{{\tens{K}}}
+\def\tL{{\tens{L}}}
+\def\tM{{\tens{M}}}
+\def\tN{{\tens{N}}}
+\def\tO{{\tens{O}}}
+\def\tP{{\tens{P}}}
+\def\tQ{{\tens{Q}}}
+\def\tR{{\tens{R}}}
+\def\tS{{\tens{S}}}
+\def\tT{{\tens{T}}}
+\def\tU{{\tens{U}}}
+\def\tV{{\tens{V}}}
+\def\tW{{\tens{W}}}
+\def\tX{{\tens{X}}}  % usually use this for the signal tensor (e.g., A *X* = B)
+\def\tY{{\tens{Y}}}
+\def\tZ{{\tens{Z}}}
+
+
+% Vectors
+\def\vzero{{\bm{0}}}
+\def\vone{{\bm{1}}}
+\def\vmu{{\bm{\mu}}}
+\def\vtheta{{\bm{\theta}}}
+\def\va{{\bm{a}}}
+\def\vb{{\bm{b}}}
+\def\vc{{\bm{c}}}
+\def\vd{{\bm{d}}}
+\def\ve{{\bm{e}}}
+\def\vf{{\bm{f}}}
+\def\vg{{\bm{g}}}
+\def\vh{{\bm{h}}}
+\def\vi{{\bm{i}}}
+\def\vj{{\bm{j}}}
+\def\vk{{\bm{k}}}
+\def\vl{{\bm{l}}}
+\def\vm{{\bm{m}}}
+\def\vn{{\bm{n}}}
+\def\vo{{\bm{o}}}
+\def\vp{{\bm{p}}}
+\def\vq{{\bm{q}}}
+\def\vr{{\bm{r}}}
+\def\vs{{\bm{s}}}
+\def\vt{{\bm{t}}}
+\def\vu{{\bm{u}}}
+\def\vv{{\bm{v}}}
+\def\vw{{\bm{w}}}
+\def\vx{{\bm{x}}}
+\def\vy{{\bm{y}}}
+\def\vz{{\bm{z}}}
+
+
+% random collection of often used macros
+\def\R{{\mathbb{R}}} % real numbers
+\def\E{{\mathbb{E}}} % expectation
+\def\P{{\mathbb{P}}} % probability
+\def\T{{\mathcal{T}}}
+\def\diag{{\text{diag}}}
+\def\bcirc{{\text{bcirc}}}
+\def\unfold{{\text{unfold}}}
+\def\fold{{\text{fold}}}
+
+% typically use caligraphic X to denote a subset of signal (e.g., tensor) space
+\def\cX{{\mathcal{X}}}
+
+\title{\textbf{Randomized Gauss-Seidel and Column-Slice-Action \\Methods for Tensor Problems}}
+\author{Jamie Haddock, Paulina Hoyos, Alona Kryshchenko, Kamila R.\ Larripa, \\ Shambhavi Suryanarayanan, Karamatou Yacoubou-Djima} 
+%\date{ }
+
+\begin{document}
+\maketitle
+
+\vspace{-2em}
+\section{History of Collaboration}
+We first note that this group of mathematicians is part of a larger group that was formed at the Women in Data Science and Mathematics (WiSDM) program at IPAM in Summer 2023.  
+The WiSDM workshop held this past summer was a great beginning for this collaboration, where we made significant advancements in the development of iterative methods for solving tensor linear systems across various data scenarios. Subsequently, our team members have been geographically dispersed, as we live in different cities and time zones. To address this logistical challenge, we have been conducting regular virtual meetings. This week at AIM, where we could be together and concentrate on propelling forward our work on some of our exciting new questions, has been invaluable.
+
+\section{Problem Context}
+
+Solving large-scale systems of linear equations or linear regressions is one of the most common problems across the data-rich sciences.  This problem arises in machine learning as subroutines of several optimization methods~\cite{boyd2004convex}, in medical imaging~\cite{Gordon1970,herman1993algebraic}, in sensor networks~\cite{savvides2001dynamic}, and in statistical analysis, to name only a few. In the matrix-vector and matrix-matrix regime, this problem is well-understood with many highly efficient methods with provable guarantees in the literature. For example, the Kaczmarz, Gauss-Seidel, and Jacobi methods are highly popular families of simple iterative methods for solving large-scale linear regressions.
+
+The \emph{Gauss-Seidel (GS)} and \emph{Jacobi} methods are a related family of \emph{column-action} iterative methods which focus on single coordinate (or group coordinate) updates to the iterates; see e.g.,~\cite{golub2013matrix}.  These methods iterate by minimizing a subset of the residual error with respect to a single coordinate; the $j$th iterate is 
+\begin{equation}
+    \vx_{j} = \vx_{j-1} - \frac{A_{i_j}^T(A \vx_{j-1} - b)}{\|A_{i_{j}}\|^2} \ve_{i_j}, \label{eq:GSupdate}
+\end{equation} 
+where $A_{i_j}$ is the $i_j$th column of $A$.  These methods, often taught in numerical analysis and numerical linear algebra courses, have found success in subroutines for multigrid methods~\cite{rude1993mathematical,trottenberg2000multigrid}, high performance computing~\cite{wolfson2017distributed}, and PDEs~\cite{glusa2020scalable,magoules2017asynchronous}.  These methods and variants have been analyzed in~\cite{LL10:Randomized-Methods,Ma2015convergence,richtarik2016parallel,frommer2023convergence}. 
+
+Modern data analysis is often challenging not only due to the size of the data, but due to the inherent complexity of the data. 
+Often this modern data is \emph{multi-modal}, with modes representing measurements along different dimensions.
+These include spatial and temporal dimensions of video data or word and document dimensions of text corpora data.  
+Data of this type is often naturally represented as a higher-order generalization of a matrix, also known as a \emph{tensor}. 
+Development of data analytic methods for higher-order tensor data is far behind that for matrices, creating a setting in which practitioners must first transform their higher-order tensor data into matrices and then apply inadequate matrix-based methods.
+This approach ignores the natural structure of the data.  Furthermore, computations with tensor data often remain challenging even when their matrix counterparts can be taught in introductory linear algebra courses. 
+
+Recently, Kaczmarz-type iterative methods have been proposed for a variety of tensor linear systems and regression problems~\cite{ma2022randomized,chen2021regularized,tang2023sketch}.  Additionally, Kaczmarz-type methods have been proposed for a variety of deblurring~\cite{kilmer2013third}, denoising~\cite{mallat1999wavelet}, and dictionary representation-learning~\cite{newman2020nonnegative} imaging applications; each of these can be formulated as a possibly regularized tensor regression problem 
+\begin{equation}
+    \min_{\tX \in \mathfrak{X}} \|\tB - \tA \tX\|_F^2 + \Phi(\tX)
+\end{equation}
+\vspace{-0.1em}where $\tA \in \mathbb{R}^{m \times n \times p}$ is the measurement operator or dictionary, $\tB \in \mathbb{R}^{m \times l \times p}$ represents the measurements or data, $\tX \in \mathfrak{X} \subset \mathbb{R}^{n \times l \times p}$ is the signal of interest, and $\tA \tX$ is the t-product between $\tA$ and $\tX$~\cite{kilmer2011factorization}. 
+The tensor \emph{t-product}, proposed by Kilmer and Martin~\cite{kilmer2013third}, is a bilinear operation between tensors that allows for the generalization of many matrix algebra definitions and properties to the tensor setting.
+ 
+ The following fact has been useful in our analysis; the tensor $t$-product can be defined equivalently using a matrix-matrix product and a folding and unfolding operation on the tensor.  We define $$\unfold(\tX) = \begin{bmatrix} \tX_1 \\ \tX_2 \\ \vdots \\ \tX_p \end{bmatrix}$$ where $\tX_k$ is the $k$th \emph{frontal slice} of $\tX$; that is, using Matlab notation, $\tX_k = \tX(:,:,k).$  Similarly, $\fold$ is the inverse operation to $\unfold$, so $$\fold\left(\begin{bmatrix} \tX_1 \\ \tX_2 \\ \vdots \\ \tX_p \end{bmatrix}\right) = \tX.$$  Finally, the block-circulant matrix of a tensor $\tA \in \mathbb{R}^{m \times n \times p}$ is defined as $$\bcirc(\tA) = \begin{bmatrix} \tA_1 & \tA_n & \tA_{n-1} & \cdots & \tA_ 2 \\ \tA_2 & \tA_1 & \tA_n & \cdots & \tA_{n-1} \\ \vdots & \vdots & \vdots & & \vdots \\ \tA_n & \tA_{n-1} & \tA_{n-2} & \cdots & \tA_1 \end{bmatrix}$$ where $\tA_k$ is the $k$th frontal slice of $\tA$.  With these definitions, we can describe the tensor $t$-product of $\tA$ and $\tX$ as a folding of the product of the block-circulant matrix of $\tA$ and the unfolding of $\tX$.
+
+\begin{fact}
+    Given $\tens{A} \in \mathbb{C}^{m\times l \times n}$ and $\tens{X} \in \mathbb{C}^{l\times p \times n}$, the $t$-product between these tensors may be equivalently defined as $$\tA \tX = \fold(\bcirc(\tA) \unfold(\tX)).$$ \label{fact:tproduct}
+\end{fact}
+
+\section{Setting and Method Derivation}
+
+While Kaczmarz-type methods are being actively explored in the tensor regression setting, coordinate-wise or column-action methods have been considered far less in the literature.  \emph{Our central goals over the three years of the SQuaRE are to propose column-slice-action iterative methods for linear tensor problems with rigorous theoretical guarantees in a variety of problem settings.}  This goal is especially important in the tensor system setting when row slices of the measurement tensor are extremely large and cannot be stored in active memory, or the tensor data is naturally stored in column-slice components (e.g., distributed across computational servers or priority indexed by column).  In this setting, accessing column-slices of the tensor may be the only reliable form of data access available.
+
+Consider the consistent tensor linear system $\tens{A}\tens{X} = \tens{B}$ where $\tens{B} \in \mathbb{C}^{m\times p \times n}$, $\tens{A} \in \mathbb{C}^{m\times l \times n}$, and $\tens{X} \in \mathbb{C}^{l\times p \times n}$. We have formulated the tensor version of the randomized Gauss-Seidel for this setting,
+\begin{equation}\hspace{-5cm}\tens{X}^{(t)} = \tens{X}^{(t-1)} +  \tens{E}_{j}(\tens{A}_{:j:}^{*}\tens{A}_{:j:})^{-1} \tens{A}_{:j:}^{*}(\tens{B}-\tens{A}\tens{X}_{t})\label{alg1}
+\end{equation}
+with $\tens{X}^{(t)}$ and $\tens{X}^{(t)}$ in $\mathbb{C}^{l\times p \times n}$, $\tens{E}_{j}$ in $\mathbb{C}^{l\times 1 \times n}$, $\tens{A}_{:j:}^{*}$ in   $\mathbb{C}^{1\times m \times n}$, $\tens{A}_{:j:}$ in $\mathbb{C}^{m\times 1 \times n}$, $\tens{B}$ in $\mathbb{C}^{m\times p \times n}$, $\tens{A}$ in $\mathbb{C}^{m\times l \times n}$.
+
+\subsection{Connection to Classical Methods}
+
+The classical Jacobi and Gauss-Seidel methods are iterative methods used to solve a system of linear equations $\mat A\bm{x}=\bm{b}$, where the square matrix $\mat A$ and the vector $\bm{b}$ are known and the goal is to approximate $\bm{x}$. 
+The Gauss-Seidel method was developed in the 1800s and is considered one of the first iterative methods developed~\cite{saad2000iterative}.  It is taught in undergraduate numerical methods courses and is similar to the Jacobi method, with the main difference being when updates are applied.  
+
+When considering $\mat A\bm{x}=\bm{b}$, the matrix $\mat  A$ is decomposed into the sum of a strictly lower triangular matrix $\mat  L$, a diagonal matrix $\mat D$, and a strictly upper triangular matrix $\mat  U$, $\mat  A = \mat D + \mat  L + \mat  U$.  This allows the system of linear equations to be rewritten as $\mat A \vx + \mat L\vx+ \mat U \vx=\bm{b}$. The Jacobi method exploits this rewritten system and produces a fixed-point iterative method on the fixed-point equation $\mat{D} \vx = -(\mat{L} + \mat{U})\vx + \vb$ of the form $$\vx^{(k)} = -\mat{D}^{-1}(\mat{L} + \mat{U})\vx^{(k-1)} + \mat{D}^{-1}\vb.$$ 
+Entry-wise, this takes the form 
+\[ \vx^{(k)}_i = -\frac{1}{A_{ii}}\sum_{j\neq i} A_{ij}\vx^{(k-1)}_j + \frac{1}{A_{ii}}\vb_i. \]
+The Gauss-Seidel method, meanwhile, uses the fixed-point equation $(\mat{D} + \mat{L}) \vx = -\mat{U}\vx + \vb$ to construct the fixed-point iterative method $$\bm{x^{(k)}} = -(\mat{D} + \mat{L})^{-1} \mat{U}\vx^{(k-1)} + (\mat{D} + \mat{L})^{-1}\vb.$$  
+This is equivalent to $\vx^{(k)} = -\mat{D}^{-1}\mat{L}\vx^{(k)} - \mat{D}^{-1}\mat{U}\vx^{(k-1)} + \mat{D}^{-1}\vb $, which takes the following form entry-wise:
+\[ \vx^{(k)}_i = -\frac{1}{A_{ii}}\sum_{j=1}^{i-1} A_{ij}\vx^{(k)}_j -\frac{1}{A_{ii}}\sum_{j=i+1}^{n} A_{ij}\vx^{(k-1)}_j + \frac{1}{A_{ii}}\vb_i. \]
+The convergence properties of the Jacobi and Gauss-Seidel method are dependent on the properties of the matrix $\mat  A$, specifically upon the spectral radius of the matrices involved in the Jacobi and Gauss-Seidel updates, $-\mat{D}^{-1}(\mat{L} + \mat{U})$ and $-(\mat{D} + \mat{L})^{-1} \mat{U}$, respectively. 
+
+In the recent literature, the method referred to as \emph{randomized Gauss-Seidel} is, in fact, a variant of randomized coordinate descent applied to the least-squares objective. We note below that this can be viewed as a variant of either Jacobi's method or Gauss-Seidel applied to the normal equations $\mat{A}^\top \mat{A} \vx = \mat{A}^\top \vb$ in which only a single coordinate is updated.  
+
+In addition to the questions previously identified in our proposal (and reiterated) below, this lead us to a new question:
+
+\begin{question}
+    Can we derive the classical Jacobi and Gauss-Seidel methods for the tensor system $\tA \tX = \tB$ where $\tA \in \mathbb{R}^{m \times m \times p}$?  Does it make sense to take the ``upper-" and ``lower-triangular" parts of a tensor $\tA$?  Can we emulate the classical convergence proofs for these methods, and if so, what is the spectral radius of the tensor? \label{ques:classical tensor methods}
+\end{question}
+
+\subsection{Connection to Coordinate Descent}
+
+The Gauss-Seidel method can also be viewed as an instance of the coordinate descent algorithm applied to solving the least square regression problem. For a general unconstrained convex optimization problem 
+$$ \underset{\vx}{\min} f(\vx), $$
+coordinate descent aims to iteratively update each coordinate by solving the smaller  optimization
+\begin{equation}
+\label{eq:coord}x_i^{(t)} = \underset{x}{\text{arg} \min} \ f(x_1^{t}, x_2^{(t)}, \dots x_{i-1}^{(t)}, x , x_{i+1}^{(t-1)}, \cdots, x_{n}^{(t-1)}).\end{equation}
+While the coordinates are updated cyclically in the formula above, other methods of sampling the coordinates, including at random, can be used here. 
+
+When $f(\vx) = \frac{1}{2} \|\mat{A}\vx-\vb\|^2$,~\eqref{eq:coord} simplifies to solving for $x_i^{(t)}$ in $\nabla_i f(\vx^{(t)}) = \bm{0}$, which, for this function $f$, yields
+$$\left[\mat{A}^\top \mat{A}\vx^{(t)} - \mat{A}^T \vb \right]_i = 0. $$
+This simplifies to 
+$$x_i^{(t)} = \frac{-\sum_{j=1}^{k-1} (\mat{A}^\top \mat{A})_{ki} \  x_j^{(t)} - \sum_{j=k+1}^{n} (\mat{A}^\top \mat{A})_{ki} \  x_j^{(t-1)} + \mat{A}_{:k}^\top \vb}{\|\mat{A}_{:k}\|^2},$$
+which matches the iterates of Gauss-Seidel when applied to solve the normal equation $\mat{A}^\top \mat{A}\vx = \mat{A}^\top\vb$; that is, \emph{a cyclically-updating coordinate descent method on the least-squares objective coincides with the classical Gauss-Seidel method applied to the normal equations}.
+
+We now turn our attention to the tensor regression case.  We note that \emph{one can derive the update~\eqref{alg1} as the coordinate descent update on the least-squares objective for the $t$-product regression problem.}  Let $L(\tens{X}) = \frac12 \|\tens{A} \tens{X} - \tens{B}\|_F^2$ and note that we can rewrite this objective, using Fact~\ref{fact:tproduct}, as $$L(\tens{X}) = \frac12 \sum_{i' = 1}^{mp} \sum_{j=1}^l (\bcirc(\tA)_{i':} \unfold(\tX)_{:j} - \unfold(B)_{i' j})^2.$$  We then derive the partial derivative 
+\begin{align*}
+    \frac{\partial L}{\partial X_{sjt}} &= \sum_{i' = 1}^{mp} (\bcirc(\tA)_{i' :} \unfold(\tX)_{:j} - \unfold(\tB)_{i', j}) \bcirc(A)_{i', (t-1)n+s}\\
+    &= \sum_{i' = 1}^{mp} \unfold(\tA \tX - \tB)_{i', j} \bcirc(\tA)_{i', (t-1)n+s}\\
+    &= \sum_{i' = 1}^{mp} \bcirc(\tA^\top)_{(t-1)n+s, i'} \unfold(\tA \tX - \tB)_{i', j}\\
+    &= (\bcirc(\tA^\top) \unfold(\tA \tX - \tB))_{(t-1)n+s, j}\\
+    &= \unfold(\tA^\top (\tA \tX - \tB))_{(t-1)n+s, j}\\ 
+    &= (\tA^\top (\tA \tX - \tB))_{sjt}.
+\end{align*}
+Thus, $\frac{\partial L}{\partial X_{s::}} = \tA_{:s:}^\top (\tA \tX - \tB)$.  Now, if we suppose that $\tX^{(t)} = \tX^{(t-1)} - \tE_s \tZ$, we may solve for the tensor $\tZ$ producing the update which will satisfy the stationary equation $\frac{\partial L}{\partial X_{s::}} = 0$, that is we wish to find $\tZ$ so that 
+\begin{align*}
+    \tA_{:s:}^\top (\tA (\tX^{(t-1)} - \tE_s \tZ) - \tB) &= 0 \\
+    -\tA_{:s:}^\top \tA \tE_s \tZ &= -\tA_{:s:}^\top (\tA \tX^{(t-1)} - \tB)\\
+    \tZ &= (\tA_{:s:}^\top \tA_{:s:})^{-1} \tA_{:s:}^\top (\tA \tX^{(t-1)} - \tB).
+\end{align*}
+Thus, we see that \emph{the tRGS update~\ref{alg1} may be derived as the ``coordinate" update which produces a stationary point of the objective $L(\tX)$}.  We will be interested in understanding the coordinate descent derivation of \emph{block methods}, which use blocks of columns in each update, in the future:
+
+\begin{question}
+    Are randomized \emph{block} Gauss-Seidel methods derived in the same way?  Do these occur as block coordinate descent updates applied to the least-squares objective, $L$? \label{ques:block coordinate descent}
+\end{question}
+
+\subsection{Gauss-Seidel Duality with Kaczmarz Methods}
+
+We begin with the primal problem  
+\begin{equation}
+    \min_{\vx} \frac{1}{2} \|{\bm{x}}\|^2 \text{ subject to } \bm{b}-\mat{A}\bm{x}=\bm{0}. \label{eq:primal}
+\end{equation}  We define the Lagrangian $$L(\bm{x},\bm{\nu})=\frac{1}{2}||{\bm{x}}||^2 + \sum_{i=1}^{m}\nu_{i}(\bm{b_i}-\va_{i}^T\bm{x})$$ where $\bm{x}$ is the primal variable and $\bm{\nu}$ is the dual variable.  Each $\nu_{i}$ is a Lagrange multiplier associated with the $i$th equality constraint.  We can simplify this equation to $$L(\bm{x},\bm{\nu}) = \frac{1}{2}\bm{x}^T\bm{x}+\bm{v}^T(\bm{b}-\mat{A}\bm{x}).$$  To determine the primal to dual variable transformation, we look at the optimum with respect to the primal, that is the $\vx$ that satisfies the stationary equation $$\nabla_{\bm{x}}L(\bm{x},\bm{\nu})=\bm{x}-\mat{A}^\top\bm{\nu}=0.$$  This forces $\bm{x}=\mat{A}^\top\bm{\nu}.$  This equation relates the primal and dual variables at their respective optimums.
+To create the dual problem, we use this variable transformation, which yields $$g(\bm{\nu}) = \frac{1}{2}\bm{\nu}^T\mat{A}\mat{A}^\top\bm{\nu} + \bm{\nu}^T\bm{b}-\bm{\nu}^T\mat{A}\mat{A}^T\bm{\nu}.$$  Simplifying yields the dual problem in the form $g(\bm{\nu}) = \bm{\nu}^T\bm{b}-\frac{1}{2}\bm{\nu}^T\mat{A}\mat{A}^T\bm{\nu}$.
+
+We now apply coordinate descent to this dual objective.  Recall that coordinate descent algorithms solve optimization problems by minimizing along each coordinate (or coordinate hyperplane).  This essentially breaks a complex problem into a number of more tractable subproblems \cite{shi2016primer}.  Assuming that $$\bm{\nu}^{(t)} = \bm{\nu}^{(t-1)} - c \ve_i$$ and that $\bm{\nu}^{(t)}$ satisfies the stationary equation $$\nabla_i g(\bm{\nu}^{(t)}) = 0$$ yields $c = \frac{(\mat{A}\mat{A}^\top \bm{\nu}^{(t)} - \vb)_i}{\|\mat{A}_{i:}\|^2}$.  We see that $$\bm{\nu}^{(t)}= \bm{\nu}^{(t-1)}-\frac{(\mat{A}\mat{A}^\top \bm{\nu}^{(t)} - \vb)_i}{\|\mat{A}_{i:}\|^2}\ve_i.$$  Because $\|\mat{A}_{i:}\|^2=(\mat{A}\mat{A}^\top)_{ii}$  we have the update 
+$$\bm{\nu}^{(t)}= \bm{\nu}^{(t-1)}-\frac{1}{(\mat{A}\mat{A}^\top)_{ii}}(\mat{A}\mat{A}^\top \bm{\nu}^{(t)} - \vb)_i\bm{e_i}.$$
+If $i$ is chosen randomly, this is RGS applied to the dual problem.
+We note that $(\mat{A}\mat{A}^\top)_{ii}$ is the Lipschitz constant of the $i$th component function of $$g(\bm{\nu}) = \sum_{i=1}^m \nu_i b_i - \frac12 \nu_i^2 \|\mat{A}_{i:}\|^2.$$
+This leads us to ask whether tRGS and tRK, i.e., the tensor variants of RGS and RK, are related in the same way via a primal and dual variables transformation.
+
+\begin{question}
+    Are tRK and tRGS methods applied to a primal and dual problem and related via a primal variable and dual variable relationship like in the matrix-vector case?  If so, is the transformation given by $\tX = \tA^\top \tY$ where $\tX$ is an iterate of tRK, and $\tY$ is an iterate of tRGS? \label{ques:duality of tensor methods}
+\end{question}
+
+
+
+\section{Conjecture and Problem 1}
+Building off the work in~\cite{wu2018convergence}, which proves convergence in expectation of the block randomized Gauss-Seidel for usual matrix-vector linear systems, our original conjecture for the method defined by update~(\ref{alg1}) was the following.
+\begin{conjecture}
+    Let $\tX^\ddagger$ be the tensor of minimal Frobenius norm such that $\tA \tX^\ddagger = \tY$ and $\tX^{(t)}$ the $t$-th approximation of $\tX^\ddagger$ given by the update~(\ref{alg1}) with initial iterate $\tX^0$. 
+    Under some mild assumptions on  $\tX^0$ and  $\tA$, the expected error at the $t$-th iteration satisfies
+    \begin{align*}
+        \mathbb{E}\left[ \| \tX^{(t)} - \tX^\ddagger \|^2_F \mid \tX^{(0)} \right] \leq (1 - r)^t \| \tX^{(0)} - \tX^\ddagger \|^2_F
+    \end{align*}
+    where $0 < r < 1$ depends upon the conditioning of the tensor $\tA$.\label{conj}
+\end{conjecture}
+
+Moreover, one of our main goals for this week at AIM was to work on this conjecture, which we described in the following proposed problem.
+\begin{PropProb}
+   We will prove Conjecture~\ref{conj} and identify regimes in which assumptions can be relaxed.  We will also extend this method and convergence results to other problem domains, such as regression problems and corrupted systems of linear equations. 
+\end{PropProb}
+As a result of our discussions and work during this week at AIM, we have refined our original conjecture and proved the fundamental lemmas needed for the corresponding convergence result. This is detailed in the next two subsections.
+
+\subsection{Updates to Conjecture}
+Currently, we do not think that the Randomized Gauss-Seidel iterations, whose updates are given by \eqref{alg1}, converge to the tensor of minimal Frobenius norm $\tX^\ddagger$ unless it is the only solution $\tX^\ast$, which occurs in the  overdetermined consistent  case.
+For overdetermined inconsistent tensor linear systems, the algorithm converges to the least-squares solution $\tX_{LS}$. Finally, in the underdetermined consistent case, we have convergence of the residual $\tA\tX^{(t)} - \tA\tX^\ast$ to zero, but it is unclear to which solution the tRGS iterates converge. Our results are summarized in Table \ref{tab: cases}.
+
+\begin{table}[h!]
+    \centering
+   \begin{tabular}{|c|c|c|}\hline
+     & overdetermined & underdetermined \\\hline
+    consistent &$\tX^{(t)}$ converges to $\tX^*$ &
+$\| \tA\tX^{(t)} - \tA\tX^\ast\|$ converges to 0 \\\hline 
+inconsistent &
+$\tX^{(t)}$ converges to $\tX_{LS}$ &
+? \\\hline 
+\end{tabular}
+\vspace{2mm}
+    \caption{ Convergence of RGS algorithm depending on the conditioning of the tensor $\tA$.}
+    \label{tab: cases}
+\end{table}
+
+The updates to our conjecture and our understanding of the differences amongst the underdetermined and overdetermined cases has led us to the following question:
+
+\begin{question}
+    Can we classify the form of the solution to which the tRGS iterates converge in the consistent, underdetermined case?  What happens in the inconsistent, underdetermined case? \label{ques:underdetermined case}
+\end{question}
+
+\subsection{Fundamental Lemmas}
+
+We have also proved the following fundamental lemmas which will allow us to prove our refined conjecture.  Our first line of investigation is into the form of the operator which defines the tRGS update.  We show that under a natural transformation, this is a projection operator, and investigate the norm and structure of the inverse matrix defining this operator; see Section~\ref{subsubsec:norm of inverse}.  We next prove orthogonality of the transformation of the sequential iterates under $\tA$ and the residual of $\tX^{(t)}$; see Section~\ref{subsubsec: orthogonality}.  This provides a Pythagorean theorem-like result for us to appeal to in decomposing the error.  We finally prove that the expectation of the residual decreases exponentially with a rate depending upon the conditioning of the projection operators; see Section~\ref{subsubsec: expecation of residuals}.
+
+\subsubsection{Structure and Norm of Inverse in Projector}\label{subsubsec:norm of inverse} The tRGS update~\eqref{alg1} applies the tensor $\tens{E}_{j}(\tens{A}_{:j:}^{*}\tens{A}_{:j:})^{-1} \tens{A}_{:j:}^{*}$ to the residual in each iteration.  This tensor, after product with $\tA$, yields a projector defined as 
+\[
+    \mathcal{P}_{\tA_{:j:}} = \tA_{:j:}(\tA_{:j:}^\ast\tA_{:j:})^{-1}\tA_{:j:}^\ast,
+\]
+where $\tA_{:j:}$ is a $m \times 1 \times n$ (tube) tensor. 
+
+\noindent We are interested in studying the term $(\tA_{:j:}^\ast\tA_{:j:})^{-1}$, which appears in the tRGS update. First, from \cite{ma2022randomized}, we know that, under the t-product,
+\[
+    (\tA_{:j:}^\ast\tA_{:j:})^{-1} = \text{fold}\left(\frac{1}{\sqrt{n}} \mathbf{F}^* \text{diag}(\mathbf{D}^{-1}) \right),
+\]
+where $\mathbf{F}$ is the Discrete Fourier Transform (DFT) matrix, and $\mathbf{D}$ is a diagonal matrix such that $\text{bcirc}(\tA_{:j:}^\ast\tA_{:j:}) = \mathbf{F}^* \mathbf{D}\mathbf{F}$.
+
+We are able to obtain a bound on the norm of $(\tA_{:j:}^\ast\tA_{:j:})^{-1}$ by writing $\mathbf{D}$ with more specificity. First, note that each row, say, $\mathbf{a}_i$, $i = 1,\, \hdots,\, n$, of $\text{bcirc}(\tA_{:j:}^\ast\tA_{:j:})$ contains permutations of the entries of the same vector, that we denote as $\mathbf{\tilde{a}}$. In \cite{mazger1983}, the authors prove that each diagonal element $i$ of $\mathbf{D}$ can be written as a DFT of the vectors $\mathbf{a}_i$. We use this fact and the property that the DFT is unitary up to a normalization factor to obtain an upper bound on the spectral norm of $\bcirc{(\tA_{:j:}^\ast\tA_{:j:})^{-1}}$.
+
+\subsubsection{Show the orthogonality of $(\tA \tX^{(t)}- \tA \tX^\star)$ and $(\tA \tX^{(t)} - \tA \tX^{(t-1)})$.}\label{subsubsec: orthogonality}
+
+The essential tool to show this is the interaction of the projection operator  $\mathcal{P}_{\tA_{:j:}} = \tA_{:j:}(\tA_{:j:}^\ast\tA_{:j:})^{-1}\tA_{:j:}^\ast$. Observe that $\mathcal{P}_{\tA_{:j:}}$ is a projection operator since $\mathcal{P}_{\tA_{:j:}}\mathcal{P}_{\tA_{:j:}}=\mathcal{P}_{\tA_{:j:}}$. Now, 
+\begin{align*}
+\langle \tA\tX^{(t)}- \tA \tX^\star , \tA \tX^{(t)} - \tA \tX^{(t-1)} \rangle 
+=& 
+\langle \tA \tX^{(t-1)} - \tA_{:j:} (\tA_{:j:}^\ast \tA_{:j:})^{-1} \tA_{:j:}^\ast(\tA \tX^{(t-1)} - \tA \tX^\star)- \tA \tX^\star ,\\
+&\tA \tX^{(t-1)} - \tA_{:j:} (\tA_{:j:}^\ast \tA_{:j:})^{-1} \tA_{:j:}^\ast(\tA \tX^{(t-1)} - \tA \tX^\star)-\tA \tX^{(t-1)} \rangle \\
+=& 
+\langle \tA \tX^{(t-1)} - \mathcal{P}_{\tA_{:j:}}(\tA \tX^{(t-1)} - \tA \tX^\star)- \tA \tX^\star , - \mathcal{P}_{\tA_{:j:}}(\tA\tX^{(t-1)} - \tA \tX^\star)\rangle \\
+=& 
+\langle (\tA \tX^{(t-1)} - \tA \tX^\star)-\mathcal{P}_{\tA_{:j:}}(\tA \tX^{(t-1)} - \tA \tX^\star) , -\mathcal{P}_{\tA_{:j:}}(\tA \tX^{(t-1)} - \tA \tX^\star)  \rangle  \\
+=& \langle  (\mathcal{I} - \mathcal{P}_{\tA_{:j:}})(\tA \tX^{(t-1)} - \tA \tX^\star) , -\mathcal{P}_{\tA_{:j:}}(\tA \tX^{(t-1)} - \tA \tX^\star) \rangle\\
+=& 0
+\end{align*}
+
+\subsubsection{Expectation of residuals}\label{subsubsec: expecation of residuals}
+The orthogonality result established in the previous step, in turn, gives us the following result -
+\begin{equation}
+\label{eq:pythogoras}\| \tA \tX^{(t)} - \tA \tX^\star\|_2^2 = \| \tA \tX^{(t-1)} - \tA \tX^\star\|_2^2- \|\tA\tX^{(t-1)} - \tA\tX^{(t)}\|_2^2  \end{equation}
+
+\textbf{Sketch of Convergence of tensor Randomized Gauss-Seidel algorithm}:
+
+Taking expectation (conditioned till time $t-1$) on both sides of the Eqn. \ref{eq:pythogoras} gives us
+
+\begin{align*}
+    \E^{(t-1)}\| \tA \tX^{(t)} - \tA \tX^{\star}\|_2^2 &= \| \tA \tX^{(t-1)} - \tA \tX^{\star}\|_2^2- \E^{(t-1)}\left[\|\tA\tX^{(t-1)} - \tA\tX^{(t)}\|_2^2\right]\\  
+    &= \| \tA \tX^{(t-1)} - \tA \tX^{\star}\|_2^2- \E^{(t-1)}\left[\|\mathcal{P}_{\tA_{:j_{t}:}}(\tA \tX^{(t-1)} - \tA \tX^\star) \|_2^2\right]\\ 
+    &= \| \tA \tX^{(t-1)} - \tA \tX^{\star}\|_2^2\left (1 - \frac{\E^{(t-1)}\left[\|\mathcal{P}_{\tA_{:j_{t}:}}(\tA \tX^{(t-1)} - \tA \tX^\star) \|_2^2\right]}{\| \tA \tX^{(t-1)} - \tA \tX^{\star}\|_2^2}\right)\\
+\end{align*}
+We can simplify the following term as - 
+\begin{align*}
+&\left[\E^{(t-1)}\|\mathcal{P}_{\tA_{:j_{(t-1)}:}}(\tA \tX^{(t-1)} -\tA  \tX^{\star})\|_2^2\right]\\
+&= \E^{(t-1)}\langle \bcirc[\mathcal{P}_{\tA_{:j_{t}:}}]\unfold(\tA \tX^{(t-1)} -\tA \tX^{\star}),\bcirc(\mathcal{P}_{\tA_{:j_{t}:}})\unfold(\tA \tX^{(t-1)} -\tA \tX^{\star}) \rangle \\
+&\underset{(1)}{=} \E^{(t-1)}\langle \bcirc(\mathcal{P}_{\tA_{:j_{t}:}})\unfold(\tA \tX^{(t-1)} -\tA \tX^{\star}), \unfold(\tA \tX^{(t-1)} -\tA \tX^{\star}) \rangle \\
+&\underset{(2)}{=}\langle \bcirc(\E^{(t-1)}[\mathcal{P}_{\tA_{:j_{t}:}}])\unfold(\tA \tX^{(t-1)} -\tA \tX^{\star}), \unfold(\tA \tX^{(t-1)} -\tA \tX^{\star}) \rangle \\
+&\geq \sigma_{\min}( \bcirc(\E^{(t-1)}[\mathcal{P}_{\tA_{:j_{t}:}}]))\|\tA \tX^{(t-1)} -\tA \tX^{\star}\|^2
+\end{align*}
+
+Step (1) uses the fact that $\mathcal{P}_{\tA_{:j_{t}:}}$ is a projection operator, while step (2) follows from linearity of $\bcirc$. Combining these results together yields the following convergence rate for the tRGS method - 
+
+$$ \E^{(t-1)}\left[\|\mathcal{P}_{\tA_{:j_{(t-1)}:}}(\tA \tX^{(t-1)} -\tA \tX^{\star})\|_2^2 \right]\leq\| \tA \tX^{(t-1)} - \tA \tX^{\star}\|_2^2\left (1 - \sigma_{\min}( \bcirc(\E^{(t-1)}[\mathcal{P}_{\tA_{:j_{t}:}}]))\right)\\$$
+By utilizing the tower property of conditional expectation, we can further claim that - 
+
+$$ \E\left[\|\mathcal{P}_{\tA_{:j_{(t-1)}:}}(\tA \tX^{(t-1)} -\tA \tX^{\star})\|_2^2 \vert \tX^{(0)} \right] \leq \| \tA \tX^{(0)} - \tA \tX^{\star}\|_2^t\left (1 - \sigma_{\min}( \bcirc(\E[\mathcal{P}_{\tA_{:j:}}]))\right)\\$$
+
+Motivated by simplifying this bound and desribing quantities in terms of the original tensor, we come to the following new question:
+
+\begin{question}
+    Can $\sigma_{\min}( \bcirc(\E[\mathcal{P}_{\tA_{:j:}}]))$ be further simplified under some distribution over the columns?  Is this quantity defined already in the tensor literature? \label{ques:sigma min}
+\end{question}
+
+\section{Looking Ahead}
+
+While we are not including them here, we completed numerical experiments for the proposed problems listed below.
+\begin{PropProb}
+We will complete a thorough suite of numerical experiments on synthetic and real data.  In particular, we plan to understand the effect of different conditionings of $\tA$ on the empirical and theoretical rates of convergence of Algorithm~\ref{alg1}, and to understand any discrepancy between these rates.
+\end{PropProb}
+
+\begin{PropProb}
+We will additionally develop and test an implementation of Algorithm~\ref{alg1} for deblurring problems.  This setting's unique challenges and operator structures will motivate new variants of the method and theoretical results.   
+\end{PropProb}
+
+We plan to build off of this progress and will complete a suite of numerical experiments which will inform and support our hypotheses, and which will form the foundation of numerical experiments for our manuscript in preparation.
+
+In addition, we would like to investigate the following proposed problems in our future work.  These problems came from our original proposal to AIM.
+
+\begin{PropProb}
+    We also plan to extend the randomized Gauss-Seidel method described in the algorithm defined by update~(\ref{alg1}) to the factorized operator setting. We will prove rigorous guarantees for these methods in this setting, which will be novel even for matrix operators.
+\end{PropProb}
+
+
+\begin{PropProb}
+    As previously noted, the aforementioned techniques for solving tensor linear systems utilize the tensor t-product framework. An overarching goal of this project is to generalize these iterative methods to other tensor products (like the CP product~\cite{kolda2009tensor}).
+\end{PropProb}
+
+In addition to these problems we identified before visiting AIM, we have identified future questions in our work during our first week.  We will consider Questions~\ref{ques:classical tensor methods},~\ref{ques:block coordinate descent},~\ref{ques:duality of tensor methods},~\ref{ques:underdetermined case}, and~\ref{ques:sigma min} in addition to our original proposed problems.
+
+\bibliographystyle{unsrt}
+\bibliography{main2}
+
+\end{document}

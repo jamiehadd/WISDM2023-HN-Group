@@ -1,10 +1,11 @@
-function [X,errs,res_errs,ln_errs,res_ln_errs] = tRGS_err(A,B,X0,T,X_true,X_LN)
+function [X,errs,res_errs,ln_errs,res_ln_errs,norms] = tRGS_err(A,B,X0,T,X_true,X_LN)
     %record number of row slices
     [m,l,n] = size(A);
     errs = [];
     ln_errs = [];
     res_errs = [];
     res_ln_errs = [];
+    norms = [];
 
     %initialize iterate
     X = X0;
@@ -16,6 +17,7 @@ function [X,errs,res_errs,ln_errs,res_ln_errs] = tRGS_err(A,B,X0,T,X_true,X_LN)
     ln_errs = [ln_errs,norm(ln_est(:))];
     res_errs = [res_errs,norm(res_est(:))];
     res_ln_errs = [res_ln_errs,norm(res_ln_est(:))];
+    norms = [norms,norm(X(:))];
 
     %iterate
     for t = 1:T
@@ -42,5 +44,6 @@ function [X,errs,res_errs,ln_errs,res_ln_errs] = tRGS_err(A,B,X0,T,X_true,X_LN)
         ln_errs = [ln_errs,norm(ln_est(:))];
         res_errs = [res_errs,norm(res_est(:))];
         res_ln_errs = [res_ln_errs,norm(res_ln_est(:))];
+        norms = [norms,norm(X(:))];
     end
 end
