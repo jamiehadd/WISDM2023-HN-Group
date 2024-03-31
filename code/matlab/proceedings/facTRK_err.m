@@ -1,23 +1,25 @@
-function [X,in_errs,in_res_errs,out_errs,out_res_errs] = facTRK_err(U,V,Y,X_0,Z_true,X_true,T)
+function [X,errs,res_errs,ln_errs,res_ln_errs,norms] = facTRK_err(U,V,Y,X_0,Z_true,X_true,X_LN,T)
     %record number of row slices
     m = size(U,1);
     m_2 = size(V,1);
-    in_errs = [];
-    in_res_errs = [];
-    out_errs = [];
-    out_res_errs = [];
+    errs = [];
+    ln_errs = [];
+    res_errs = [];
+    res_ln_errs = [];
+    norms = [];
 
     %initialize iterate
     X = X_0;
     Z = tprod(V,X_0);
-    out_est = Z - Z_true;
-    in_est = X - X_true;
-    out_res_est = tprod(U,out_est);
-    in_res_est = tprod(tprod(U,V),in_est);
-    in_errs = [in_errs, norm(in_est(:))];
-    out_errs = [out_errs, norm(out_est(:))];
-    in_res_errs = [in_res_errs, norm(in_res_est(:))];
-    out_res_errs = [out_res_errs, norm(out_res_est(:))];
+    est = X - X_true;
+    ln_est = X - X_LN;
+    res_est = tprod(U,tprod(V,est));
+    res_ln_est = tprod(U,tprod(V,ln_est));
+    errs = [errs,norm(est(:))/norm(X_true(:))];
+    ln_errs = [ln_errs,norm(ln_est(:))/norm(X_LN(:))];
+    res_errs = [res_errs,norm(res_est(:))];
+    res_ln_errs = [res_ln_errs,norm(res_ln_est(:))];
+    norms = [norms,norm(X(:))];
 
     %iterate
     for t = 1:T
@@ -48,13 +50,14 @@ function [X,in_errs,in_res_errs,out_errs,out_res_errs] = facTRK_err(U,V,Y,X_0,Z_
         %RK step 
         X = X - tprod(tprod(V_slice_t,V_prod_inv),resid_z);
 
-        out_est = Z - Z_true;
-        in_est = X - X_true;
-        out_res_est = tprod(U,out_est);
-        in_res_est = tprod(tprod(U,V),in_est);
-        in_errs = [in_errs, norm(in_est(:))];
-        out_errs = [out_errs, norm(out_est(:))];
-        in_res_errs = [in_res_errs, norm(in_res_est(:))];
-        out_res_errs = [out_res_errs, norm(out_res_est(:))];
+        est = X - X_true;
+        ln_est = X - X_LN;
+        res_est = tprod(U,tprod(V,X)) - Y;
+        res_ln_est = tprod(U,tprod(V,ln_est));
+        errs = [errs,norm(est(:))/norm(X_true(:))];
+        ln_errs = [ln_errs,norm(ln_est(:))/norm(X_LN(:))];
+        res_errs = [res_errs,norm(res_est(:))];
+        res_ln_errs = [res_ln_errs,norm(res_ln_est(:))];
+        norms = [norms,norm(X(:))];
     end
 end
