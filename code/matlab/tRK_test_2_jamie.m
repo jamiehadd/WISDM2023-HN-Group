@@ -3,8 +3,8 @@ addpath('tproduct toolbox 2.0 (transform)/')
 %% Generate Tensors - T-Product
 m_2 = 10;
 m_1 = 5;
-p = 7;
-n = 5;
+p = 30;
+n = 7;
 m = 50;
 
 X_true = randn(m_1,n,p);
@@ -23,7 +23,7 @@ num_its = 2000;
 
 errs = [];
 for j = 1:num_its+1
-    est = its_X{j} - X_true;
+    est = tprod(W,its_X{j} - X_true);
     errs = [errs,norm(est(:))];
 end
 
@@ -33,7 +33,7 @@ end
 %record errors
 errs_prod = [];
 for j = 1:num_its+1
-    est = its{j} - X_true;
+    est = tprod(W,its{j} - X_true);
     errs_prod = [errs_prod,norm(est(:))];
 end
 
@@ -41,7 +41,7 @@ end
 semilogy(0:num_its,errs,'b-',0:num_its,errs_prod,'r--','LineWidth',3)
 % hold on
 % Create ylabel
-ylabel('$\| \mathbf{\mathcal{X}}^{(t)} - \mathbf{\mathcal{X}}^\ddagger \|^2_F$',...
+ylabel('$\|\mathbf{\mathcal{A}}(\mathbf{\mathcal{X}}^{(k)} - \mathbf{\mathcal{X}}) \|^2_F$',...
     'FontSize',22,...
     'Interpreter','latex');
 
