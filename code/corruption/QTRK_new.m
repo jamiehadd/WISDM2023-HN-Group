@@ -1,7 +1,6 @@
 function [X,its] = QTRK_new(A,B, X0, T, q_value) 
     X = X0; %initialize iterate
     its = {X}; % storing all approximations 
-    
     %iterate
     for t = 1:T
         E = abs(tprod(A, its{t})-B); %error tensor
@@ -19,8 +18,9 @@ function [X,its] = QTRK_new(A,B, X0, T, q_value)
 
         % Check if there are uncorrupted rows left
         if isempty(uncorrupted_rows)
-            warning('All rows are corrupted at iteration %d. Stopping early.', t);
-            break;
+            %warning('All rows are corrupted at iteration %d. Stopping early.', t);
+            its{end + 1} = X; % Store the current X without updating
+            continue; % Skip to the next iteration
         end
 
         %sample row slice from uncorrupted ones
