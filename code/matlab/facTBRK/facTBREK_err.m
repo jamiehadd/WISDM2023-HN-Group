@@ -1,4 +1,4 @@
-function [X,errs,res_errs,ln_errs,res_ln_errs,norms] = facTBRK_err(U,V,Y,X_0,X_true,X_LN,T,out_block_size,in_block_size)
+function [X,errs,res_errs,ln_errs,res_ln_errs,norms] = facTBREK_err(U,V,Y,X_0,X_true,X_LN,T,out_block_size,in_block_size)
     %record number of row slices
     m = size(U,1);
     m_2 = size(V,1);
@@ -9,6 +9,7 @@ function [X,errs,res_errs,ln_errs,res_ln_errs,norms] = facTBRK_err(U,V,Y,X_0,X_t
     norms = [];
 
     %initialize iterate
+    W = Y;
     X = zeros(size(X_0));
     Z = zeros(size(tprod(V,X_0)));
     est = X - X_true;
@@ -23,7 +24,14 @@ function [X,errs,res_errs,ln_errs,res_ln_errs,norms] = facTBRK_err(U,V,Y,X_0,X_t
 
     %iterate
     for t = 1:T
-        %sample row slice from U to update Z in terms of Y residuals
+        %sample columns slice from U to update W
+        l_t = randsample(m_2,1);
+        U_col = U(:,l_t,:);
+        U_col_t = tran(U_col);
+        U_col_inv = tinv(tprod(U_col_t,U_col));
+        W = W - tprod(U_col,tprod(U_col_inv,tprod(U_col_t,W)));
+
+        %sample row block from U to update Z in terms of Y residuals
         mu_t = randsample(m,out_block_size,false);
         U_slice = U(mu_t,:,:);
         Y_slice = Y(mu_t,:,:);
@@ -34,9 +42,9 @@ function [X,errs,res_errs,ln_errs,res_ln_errs,norms] = facTBRK_err(U,V,Y,X_0,X_t
         resid_y = tprod(U_slice,Z) - Y_slice;
 
         %RK step 
-        Z = Z - tprod(tprod(U_slice_t,U_prod_inv),resid_y);
+        Z = Z - tprod(tprod(U_slice_t,U_prod_inv),resid_y + W(mu_t,:,:));
 
-        %sample row slice from V to update X in terms of Z residuals
+        %sample row block from V to update X in terms of Z residuals
         nu_t = randsample(m_2,in_block_size,false);
         V_slice = V(nu_t,:,:);
         Z_slice = Z(nu_t,:,:);
