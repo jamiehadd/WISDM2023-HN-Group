@@ -1,9 +1,9 @@
-function [X,its] = mtRK_new(A,B,X0,T, ncorr)
+function [X,its] = mtRK_new(A,B,X0,T, q)
 % goal:  solve a linear system AX=B, using a masked quantile tensor
 % randomized Kaczmarz
 % inputs A,B, X0 (initial value for X)
 % T = max number of iterations 
-% ncorr = number of corruptions
+% q = quantile level
 
     X = X0; %initialize iterate
     its = {X}; % storing all approximations 
@@ -20,7 +20,6 @@ function [X,its] = mtRK_new(A,B,X0,T, ncorr)
         resid = tprod(A_slice,X) - B_slice;
         temp_subtract = tprod(tprod(A_slice_t,A_prod_inv),resid);
         E = abs(tprod(A, its{t})-B); %error tensor
-        q = 1 - ncorr/(size(E,1)*size(E,2)*size(E,3)); %proportion of non-corrupted entries
         cq = quantile(E, q, "all"); %find the quantile value corresponding to q, in E (error tensor) 
         bad_j = []; % indices that are potential corruptions
         for j = 1:size(E,2)
