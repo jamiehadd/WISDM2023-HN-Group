@@ -37,6 +37,6 @@ function [X,res_errs] = facTBRK_err_deblurring(U,V,Y,X_0,T,out_block_size,in_blo
         %RK step 
         X = X - tprod(tprod(V_slice_t,V_prod_inv),resid_z);
         res_est = tprod(U,tprod(V,X)) - Y;
-        res_errs(t) = norm(res_est,"fro")/norm(Y,"fro");
+        res_errs(t) = norm(res_est(:),"fro")/norm(Y(:),"fro");
     end
 end

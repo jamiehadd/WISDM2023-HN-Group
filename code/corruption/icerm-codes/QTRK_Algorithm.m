@@ -8,7 +8,7 @@ function [X,its] = QTRK_Algorithm(A,B, X0, T, q_value)
         corrupted_rows = [];
          % Identify corrupted rows
         for i = 1:size(B, 1)
-            if any(E(i, :, :) >= Q, 'all')
+            if any(E(i, :, :) > Q, 'all')
                 corrupted_rows(end + 1) = i;
             end
         end

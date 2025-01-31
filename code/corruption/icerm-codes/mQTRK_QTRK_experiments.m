@@ -2,6 +2,8 @@
 
 clear; clc;
 addpath(genpath(pwd));
+addpath('../../matlab/tproduct toolbox 2.0 (transform)/')
+warning('off','all')
 
 % Define all parameters below to generate syntehtic data
 

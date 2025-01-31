@@ -38,24 +38,41 @@ errs_matrix = zeros(num_trials, num_its+1);
 for t = 1:num_trials
 
     %generate tensors
-    A = randn(m,l,n);
-    X_true = randn(l,p,n);
+    A = abs(randn(m,l,n));
+    X_true = abs(randn(l,p,n));
     B = tprod(A,X_true);
 
     % Generate random corruption values for each trial
     corruption_values = mean_corrupt + deviation_corrupt*randn(num_corrupt, 1);
 
     % Generate k random row indices to corrupt
-    corrupt_rows = randsample(m, k);
+    corrupt_rows = randsample(m, k,false)';
+
+    all_inds = [];
+
+    for i = corrupt_rows
+        for j = 1:p
+            for k = 1:n
+                all_inds = [all_inds; i,j,k];
+            end
+        end
+    end
+
+    corrupt_entries_inds = randsample(size(all_inds,1),num_corrupt,false);
 
     % Distribute num_corrupt corruptions uniformly across the k rows
     for i = 1:num_corrupt
-        % Select a random row from the chosen rows
-        row_idx = corrupt_rows(randsample(k, 1));
-
-        % Randomly select indices for the other dimensions
-        col_idx = randsample(p, 1);
-        depth_idx = randsample(n, 1);
+%         % Select a random row from the chosen rows
+%         row_idx = corrupt_rows(randsample(k, 1),false);
+% 
+%         % Randomly select indices for the other dimensions
+%         col_idx = randsample(p, 1);
+%         depth_idx = randsample(n, 1);
+        %all_inds(corrupt_entries_inds(i),:)
+        inds = all_inds(corrupt_entries_inds(i),:);
+        row_idx = inds(1);
+        col_idx = inds(2);
+        depth_idx = inds(3);
 
         % Apply the corruption value
         B(row_idx, col_idx, depth_idx) = B(row_idx, col_idx, depth_idx) + corruption_values(i);
@@ -70,5 +87,4 @@ for t = 1:num_trials
         errs_matrix(t,j) = norm(est(:))/norm(X_true(:)); % Relative Frobenius error to true solution
     end
 end
-
 end
