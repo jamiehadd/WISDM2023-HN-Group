@@ -1,7 +1,8 @@
-function errs_matrix = QTRK_trials(tdims, num_corrupt, q, k, cor_size, num_trials, num_its)
+function errs_matrix = ALG_trials(alg, tdims, num_corrupt, q, k, cor_size, num_trials, num_its)
 
 
 %% PARAMETERS
+% alg (str): algorithm "QTRK" or "mQTRK"
 % tdims (list): list of dimentions [l,p,n,m] where
 % the unkown tensor has shape(l,p,n),
 % the left-hand measurement tensor A has shape (m,l,n),
@@ -20,7 +21,8 @@ function errs_matrix = QTRK_trials(tdims, num_corrupt, q, k, cor_size, num_trial
 % num_its (integer>0): number of iterations for the iterative algorithm
 
 %% OUTPUT
-% errs_matrix (array): num_trials-by-(num_its + 1) rel. errors for QTRK
+% errs_matrix (array): num_trials-by-(num_its + 1) rel. errors for the
+% algorithm (QTRK or mQTRK)
 
 % Pull given dimensions
 l = tdims(1);
@@ -63,8 +65,12 @@ for t = 1:num_trials
         B(row_idx, col_idx, depth_idx) = B(row_idx, col_idx, depth_idx) + corruption_values(i);
     end
    
-    % Run QTRK
-    [~, its] = QTRK_Algorithm(A,B, X0, num_its, q); % Adjust q as needed
+    % Run Algorithm (QTRK or mQTRK)
+    if alg == "QTRK"
+        [~, its] = QTRK_Algorithm(A,B, X0, num_its, q); % Adjust q as needed
+    elseif alg == "mQTRK"
+        [~, its] = mQTRK_Algorithm(A,B, X0, num_its, q); % Adjust q as needed
+    end
 
     % Record errors for the current trial
     for j = 1:num_its + 1

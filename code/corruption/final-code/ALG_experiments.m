@@ -17,6 +17,9 @@ q_array = [1, 1 - num_corrupt_array/(m*p*n)]; % OR under-estimate OR over-estima
 num_trials = 150;
 num_its = 2000;
 
+% Specify model
+alg = "mQTRK"; % or alg = "mQTRK";
+
 % String or Array
 corr_option = "large";
 
@@ -25,10 +28,8 @@ if corr_option == "large"
     cor_size = [100,20];
 elseif corr_option == "small"
     cor_size = [10,5];
-else
-    cor_size = corr_option;
 end
 
 
-QTRK_plots(tdims, num_corrupt_array, k_array, q_array, num_trials, num_its, cor_size, corr_option)
+ALG_plots(alg, tdims, num_corrupt_array, k_array, q_array, num_trials, num_its, cor_size, corr_option)
 

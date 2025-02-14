@@ -1,6 +1,6 @@
-function QTRK_plots(tdims, num_corrupt_array, k_array, q_array, num_trials, num_its, cor_size, corr_option)
+function ALG_plots(alg, tdims, num_corrupt_array, k_array, q_array, num_trials, num_its, cor_size, corr_option)
 
-%% Code to generate QTRK plots %%
+%% Code to generate QTRK or mQTRK plots %%
 tic
 
 % Create a new folder to the save figure
@@ -17,6 +17,7 @@ n = tdims(3);
 m = tdims(4);
 
 disp("Experiment Folder: " + rnumb);
+disp("Algorithm: " + alg);
 disp("Corr. dist. = " + cor_size);
 disp("beta-row = " + k_array/m);
 disp("beta = " + num_corrupt_array/(m*p*n));
@@ -48,8 +49,8 @@ for i = 1:param1
 
             disp(i + " out of " + param1 + " and " + j + " out of " + param2 + " and " + l + " out of " + param3)
     
-            % Run QTRK
-            errs_matrix = QTRK_trials(tdims, num_corrupt, q, k, cor_size, num_trials, num_its);
+            % Run Algorithm (QTRK or mQTRK)
+            errs_matrix = ALG_trials(alg, tdims, num_corrupt, q, k, cor_size, num_trials, num_its);
     
             % Aggregate results
             % --- >
@@ -111,12 +112,13 @@ for i = 1:param1
 
         % Save individual subfigures
         corr_option = char(corr_option);
-        figFileName = fullfile(folderName, ['QTRK_', corr_option, '_exp_', num2str(rnumb), '_subfig_', num2str(num_corrupt_array(i)), '_', num2str(k_array(j)), '.fig']);
+        alg = char(alg);
+        figFileName = fullfile(folderName, [alg, '_', corr_option, '_exp_', num2str(rnumb), '_subfig_', num2str(num_corrupt_array(i)), '_', num2str(k_array(j)), '.fig']);
         savefig(individual_fig, figFileName);
 
         % Save individual figures
         set(gcf, 'Position', [100, 100, 600, 400]);  % [left, bottom, width, height]
-        pngFileName = fullfile(folderName, ['QTRK_', corr_option, '_exp_', num2str(rnumb), '_subfig_', num2str(num_corrupt_array(i)), '_', num2str(k_array(j)), '.png']);
+        pngFileName = fullfile(folderName, [alg, '_', corr_option, '_exp_', num2str(rnumb), '_subfig_', num2str(num_corrupt_array(i)), '_', num2str(k_array(j)), '.png']);
         print(gcf, pngFileName, '-dpng', '-r300');  % Adjust resolution as needed
 
         close(individual_fig);
@@ -133,6 +135,7 @@ disp("Wall-clock time (in sec): "  + tmr)
 filePath = fullfile(folderName, 'parameters.txt');
 discp = fopen(filePath, 'w' );
 fprintf(discp, "Experiment Folder: %s\n", rnumb);
+fprintf(discp, "Algorithm: %s\n", alg);
 fprintf(discp,"Dims: l = %d, p = %d, n = %d, m = %d\n", l, p, n, m);
 fprintf(discp,"Trials: %d, Iters: %d\n", num_trials, num_its);
 fprintf(discp,"Corr. dist. = %d, %d\n", cor_size(1), cor_size(2));
