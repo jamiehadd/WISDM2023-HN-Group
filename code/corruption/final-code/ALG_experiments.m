@@ -4,9 +4,9 @@ clear; clc;
 addpath(genpath(pwd));
 addpath('../../matlab/tproduct toolbox 2.0 (transform)/')
 
-% Define all parameters below to generate syntehtic data
+% Define all parameters below to generate syntehtic data (see hyperparameters.txt)
 
-l = 5; p = 4; n = 10; m = 25;
+l = 5; p = 4; n = 10; m = 25; 
 tdims = [l,p,n,m];
 
 num_corrupt_array = [25,75,100];
@@ -21,7 +21,7 @@ num_its = 2000;
 alg = "mQTRK"; % or alg = "mQTRK";
 
 % String or Array
-corr_option = "large";
+corr_option = "small";
 
 % Examples:
 if corr_option == "large"

@@ -5,7 +5,7 @@ tic
 
 % Create a new folder to the save figure
 rnumb = num2str(randi([1, 1000]));
-folderName = ['Exp_',num2str(rnumb)] ;
+folderName = ['exp-',num2str(rnumb)] ;
 if ~exist(folderName, 'dir') % check it does not exist
     mkdir(folderName);
 end
@@ -109,11 +109,14 @@ for i = 1:param1 %num_corrupt
 
     % Set the y-axis to a logarithmic scale
     set(gca, 'YScale', 'log');
+    
+    % Set y-axis tick labels to be visible
+    yticks([10^(-10), 10^0]); 
 
     % Set font size for tick labels and texts
     set(gca, 'FontSize', 32); %tick labels
-    xlabel('Iteration', 'Interpreter','latex', FontSize=36);
-    ylabel('Relative Error', 'Interpreter','latex', FontSize=36);
+    xlabel('Iteration', 'Interpreter','latex', FontSize=34);
+    ylabel('Relative Error', 'Interpreter','latex', FontSize=34);
 
     % Set x- and y-axis limits
     ylim([yMin, yMax]);
@@ -138,10 +141,12 @@ for i = 1:param1 %num_corrupt
 
 end
 tmr = toc;
+dt = datetime;
 disp("Wall-clock time (in sec): "  + tmr)
 
 filePath = fullfile(folderName, 'parameters.txt');
 discp = fopen(filePath, 'w' );
+fprintf(discp, "Date and Time of Experiment: %s\n", dt);
 fprintf(discp, "Experiment Folder: %s\n", rnumb);
 fprintf(discp,"Dims: l = %d, p = %d, n = %d, m = %d\n", l, p, n, m);
 fprintf(discp,"Trials: %d, Iters: %d\n", num_trials, num_its);

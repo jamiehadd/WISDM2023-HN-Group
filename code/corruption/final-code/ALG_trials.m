@@ -3,8 +3,8 @@ function errs_matrix = ALG_trials(alg, tdims, num_corrupt, q, k, cor_size, num_t
 
 %% PARAMETERS
 % alg (str): algorithm "QTRK" or "mQTRK"
-% tdims (list): list of dimentions [l,p,n,m] where
-% the unkown tensor has shape(l,p,n),
+% tdims (list): list of dimensions [l,p,n,m] where
+% the unknown tensor has shape(l,p,n),
 % the left-hand measurement tensor A has shape (m,l,n),
 % the right-hand measurement tensor B has shape (m,p,n)
 

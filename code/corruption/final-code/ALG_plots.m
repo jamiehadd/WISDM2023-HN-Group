@@ -5,7 +5,7 @@ tic
 
 % Create a new folder to the save figure
 rnumb = num2str(floor(1000 * rand));
-folderName = ['Exp_',num2str(rnumb)] ;
+folderName = ['exp-',num2str(rnumb)] ;
 if ~exist(folderName, 'dir') % check it does not exist
     mkdir(folderName);
 end
@@ -91,11 +91,14 @@ for i = 1:param1
 
         for l = 1:param3
             median_errs = allY(index,:,l);
-            plot(1:num_its+1, median_errs, 'Color', colors{l},'LineStyle', lineStyles{l}, 'LineWidth', 6);
+            plot(1:num_its+1, median_errs, 'Color', colors{l},'LineStyle', lineStyles{l}, 'LineWidth', 5);
         end
 
         % Set the y-axis to a logarithmic scale
         set(gca, 'YScale', 'log');
+    
+        % Set y-axis tick labels to be visible
+        yticks([10^(-10), 10^0]);
 
         % Set font size for tick labels and texts
         set(gca, 'FontSize', 34); %tick labels
@@ -130,10 +133,12 @@ for i = 1:param1
     end
 end
 tmr = toc;
+dt = datetime;
 disp("Wall-clock time (in sec): "  + tmr)
 
 filePath = fullfile(folderName, 'parameters.txt');
 discp = fopen(filePath, 'w' );
+fprintf(discp, "Date and Time of Experiment: %s\n", dt);
 fprintf(discp, "Experiment Folder: %s\n", rnumb);
 fprintf(discp, "Algorithm: %s\n", alg);
 fprintf(discp,"Dims: l = %d, p = %d, n = %d, m = %d\n", l, p, n, m);

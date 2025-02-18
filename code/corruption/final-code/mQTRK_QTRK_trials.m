@@ -2,8 +2,8 @@ function [errs_matrix1, errs_matrix2] = mQTRK_QTRK_trials(tdims, num_corrupt, q,
 
 
 %% PARAMETERS
-% tdims (list): list of dimentions [l,p,n,m] where
-% the unkown tensor has shape(l,p,n),
+% tdims (list): list of dimensions [l,p,n,m] where
+% the unknown tensor has shape(l,p,n),
 % the left-hand measurement tensor A has shape (m,l,n),
 % the right-hand measurement tensor B has shape (m,p,n)
 

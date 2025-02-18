@@ -1,13 +1,14 @@
-function [X,its] = mQTRK_Algorithm(A,B,X0,T, q)
-% goal:  solve a linear system AX=B, using a masked quantile tensor
-% randomized Kaczmarz
-% inputs A,B, X0 (initial value for X)
+function [X,its] = mQTRK_Algorithm(A,B,X0,T,q)
+
+% Goal: Solve a linear system AX=B, using mQTRK
+% Inputs: A,B, X0 (initial value for unknown tensor X)
 % T = max number of iterations 
 % q = quantile level
 
     X = X0; %initialize iterate
     its = {X}; % storing all approximations 
     rs = randsample(size(A,1),T,true); %random sample of row slices of A, with rep.
+
     %iterate
     for t = 1:T
         %sample row slice

@@ -1,6 +1,13 @@
-function [X,its] = QTRK_Algorithm(A,B, X0, T, q_value) 
+function [X,its] = QTRK_Algorithm(A,B,X0,T,q_value) 
+
+% Goal: Solve a linear system AX=B, using QTRK
+% Inputs: A,B, X0 (initial value for unknown tensor X)
+% T = max number of iterations 
+% q = quantile level
+
     X = X0; %initialize iterate
     its = {X}; % storing all approximations 
+
     %iterate
     for t = 1:T
         E = abs(tprod(A, its{t})-B); %error tensor
@@ -34,7 +41,6 @@ function [X,its] = QTRK_Algorithm(A,B, X0, T, q_value)
         resid = tprod(A_slice,X) - B_slice;
         temp_subtract = tprod(tprod(A_slice_t,A_prod_inv),resid);
 
-        %display(['Iteration: ', num2str(t), 'Row: ', num2str(i_t), 'Bad rows: ', num2str(corrupted_rows)]);
         X = X - temp_subtract;
         its{end+1} = X;
     end
