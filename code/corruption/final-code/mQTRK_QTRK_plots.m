@@ -1,14 +1,20 @@
-function mQTRK_QTRK_plots(tdims, num_corrupt_array, k_array, q_array, num_trials, num_its, cor_size, corr_option)
+function mQTRK_QTRK_plots(tdims, beta_array, betarow_array, q_array, num_trials, num_its, cor_size, corr_option)
 
 %% Code to generate QTRK plots %%
 tic
 
+% Shuffle state
+rngState = rng('shuffle'); 
+
 % Create a new folder to the save figure
-rnumb = num2str(randi([1, 1000]));
-folderName = ['exp-',num2str(rnumb)] ;
+exp_id = randi([1, 9999]);
+folderName = ['exp-',num2str(exp_id)] ;
 if ~exist(folderName, 'dir') % check it does not exist
     mkdir(folderName);
 end
+
+% Save state
+save(fullfile(folderName,'rngState.mat'), 'rngState');
 
 % Pull given dimensions
 l = tdims(1);
@@ -16,18 +22,22 @@ p = tdims(2);
 n = tdims(3);
 m = tdims(4);
 
-disp("Experiment Folder: " + rnumb);
+disp("Experiment Folder: " + exp_id);
 disp("Corr. dist. = " + cor_size);
-disp("beta-row = " + k_array/m);
-disp("beta = " + num_corrupt_array/(m*p*n));
+disp("beta-row = " + betarow_array);
+disp("beta = " + beta_array);
 disp("q = " + q_array);
 
 
 %% Running Algorithm with Different Combination of Parameters
 
 % Number of parameters
-param1 = length(num_corrupt_array);
-param2 = length(k_array);
+param1 = length(beta_array);
+param2 = length(betarow_array);
+
+% Number of corruptions and corrupted rows
+num_corrupt_array = round(beta_array*(m*p*n));
+k_array = round(betarow_array*m);
 
 % Initialize variables to determine y-axis limits
 allY_Q = [];
@@ -100,9 +110,9 @@ for i = 1:param1 %num_corrupt
     ind_ll = 1;
     for ll = 1:2*param2
         if mod(ll, 2) == 1
-            legendLabels{ll} = strcat('QTRK ' , ' $\beta_{\mbox{row}} = $ ', num2str(round(k_array(ind_ll)/m,3)));
+            legendLabels{ll} = strcat('QTRK ' , ' $\beta_{\mbox{row}} = $ ', num2str(round(betarow_array(ind_ll),3)));
         else
-            legendLabels{ll} =  strcat('mQTRK ' , ' $\beta_{\mbox{row}} = $ ', num2str(round(k_array(ind_ll)/m,3)));
+            legendLabels{ll} =  strcat('mQTRK ' , ' $\beta_{\mbox{row}} = $ ', num2str(round(betarow_array(ind_ll),3)));
             ind_ll = ind_ll +1;
         end
     end
@@ -128,12 +138,12 @@ for i = 1:param1 %num_corrupt
 
     % Save individual subfigures
     corr_option = char(corr_option);
-    figFileName = fullfile(folderName, ['COMP_', corr_option, '_exp_', num2str(rnumb), '_subfig_', num2str(num_corrupt_array(i)),'.fig']);
+    figFileName = fullfile(folderName, ['COMP_', corr_option, '_exp_', num2str(exp_id), '_subfig_', num2str(num_corrupt_array(i)),'.fig']);
     savefig(individual_fig, figFileName);
     
     % Save as PNG
     set(gcf, 'Position', [100, 100, 600, 400]);  % [left, bottom, width, height]
-    pngFileName = fullfile(folderName, ['COMP_', corr_option, '_exp_', num2str(rnumb), '_subfig_', num2str(num_corrupt_array(i)),'.png']);
+    pngFileName = fullfile(folderName, ['COMP_', corr_option, '_exp_', num2str(exp_id), '_subfig_', num2str(num_corrupt_array(i)),'.png']);
     print(gcf, pngFileName, '-dpng', '-r300');  % Adjust resolution as needed
 
     close(individual_fig);
@@ -147,12 +157,12 @@ disp("Wall-clock time (in sec): "  + tmr)
 filePath = fullfile(folderName, 'parameters.txt');
 discp = fopen(filePath, 'w' );
 fprintf(discp, "Date and Time of Experiment: %s\n", dt);
-fprintf(discp, "Experiment Folder: %s\n", rnumb);
+fprintf(discp, "Experiment Folder: %d\n", exp_id);
 fprintf(discp,"Dims: l = %d, p = %d, n = %d, m = %d\n", l, p, n, m);
 fprintf(discp,"Trials: %d, Iters: %d\n", num_trials, num_its);
 fprintf(discp,"Corr. dist. = %d, %d\n", cor_size(1), cor_size(2));
-fprintf(discp,"beta-row = %.5f\n", k_array/m);
-fprintf(discp,"beta = %.5f\n",num_corrupt_array/(m*p*n));
+fprintf(discp,"beta-row = %.5f\n", betarow_array);
+fprintf(discp,"beta = %.5f\n",beta_array);
 fprintf(discp, "q = %.5f\n", q_array);
 fprintf(discp, "Wall-clock time (in sec):%.3f\n", tmr);
 fclose(discp);
