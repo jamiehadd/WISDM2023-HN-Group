@@ -7,10 +7,10 @@ addpath('../../matlab/tproduct toolbox 2.0 (transform)/')
 
 % Define all parameters below to generate syntehtic data (see hyperparameters.txt)
 
-l = 5; p = 7; n = 10; m = 25; 
+l = 5; p = 4; n = 10; m = 25;  
 tdims = [l,p,n,m];
 
-beta_array = [0.025,0.075,0.1];
+beta_array = [0.025,0.075,0.1]; 
 betarow_array = [0.2,0.4,0.8];
 
 q_array = [1, 1 - beta_array]; % OR under-estimate OR over-estimate array
@@ -19,10 +19,10 @@ num_trials = 150;
 num_its = 2000;
 
 % Specify model
-alg = "mQTRK"; % "QTRK" or "mQTRK"
+alg = "QTRK"; % "QTRK" or "mQTRK"
 
 % String or Array
-corr_option = "large";
+corr_option = "small";
 
 % Examples:
 if corr_option == "large"

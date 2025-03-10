@@ -80,7 +80,7 @@ yMin = min([allY_Q(:); allY_m(:)]);
 yMax = max([allY_Q(:); allY_m(:)]);
 
 % Choice of markers, colors, and lines for plotting
-colors = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.2, 0.2, 0.2]};
+colors = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.2, 0.2, 0.2], [0.466, 0.674, 0.188]};
 markers = {'o', '*', '+'};
 lineStyles = {'-', ':', '-.'};
 legendLabels = cell(1, 2*param2);

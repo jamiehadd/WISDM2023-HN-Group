@@ -53,11 +53,11 @@ for i = 1:param1
         % Define current parameters
         k = k_array(j);
 
-        for l = 1:param3
-            % Define current parameters
-            q = q_array(l);
+        for h = 1:param3
+            % Define current parameters 
+            q = q_array(h);
 
-            disp(i + " out of " + param1 + " and " + j + " out of " + param2 + " and " + l + " out of " + param3)
+            disp(i + " out of " + param1 + " and " + j + " out of " + param2 + " and " + h + " out of " + param3)
     
             % Run Algorithm (QTRK or mQTRK)
             errs_matrix = ALG_trials(alg, tdims, num_corrupt, q, k, cor_size, num_trials, num_its);
@@ -68,7 +68,7 @@ for i = 1:param1
             median_errs = median(errs_matrix);
     
             % Collect y-values for later use
-            allY(indd,:,l) = median_errs;
+            allY(indd,:,h) = median_errs;
         end
         indd = indd  + 1;
     end
@@ -81,8 +81,8 @@ yMin = min(allY(:));
 yMax = max(allY(:));
 
 % Choice of markers, colors, and lines for plotting
-colors = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.9290 0.6940 0.1250],[0.2, 0.2, 0.2]};
-lineStyles = {'-', '--',':', '-.'};
+colors = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.9290 0.6940 0.1250], [0.2, 0.2, 0.2], [0.466, 0.674, 0.188]};
+lineStyles = {'-', '--',':', '-.', '-'};
 legendLabels = cell(1, param3);
 
 % Initialize index counter for accessing allY
@@ -99,9 +99,9 @@ for i = 1:param1
         individual_fig = figure;
         hold on
 
-        for l = 1:param3
-            median_errs = allY(index,:,l);
-            plot(1:num_its+1, median_errs, 'Color', colors{l},'LineStyle', lineStyles{l}, 'LineWidth', 5);
+        for h = 1:param3
+            median_errs = allY(index,:,h);
+            plot(1:num_its+1, median_errs, 'Color', colors{h},'LineStyle', lineStyles{h}, 'LineWidth', 5);
         end
 
         % Set the y-axis to a logarithmic scale

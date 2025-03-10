@@ -7,11 +7,11 @@ addpath('../../matlab/tproduct toolbox 2.0 (transform)/')
 
 % Define all parameters below to generate syntehtic data (see hyperparameters.txt)
 
-l = 5; p = 7; n = 10; m = 25;
+l = 5; p = 4; n = 10; m = 25;
 tdims = [l,p,n,m];
 
 beta_array = [0.025,0.075,0.1];
-betarow_array = [0.4,0.8];
+betarow_array = [0.4,0.6];
 
 q_array = [1, 1 - beta_array]; % OR under-estimate OR over-estimate array
 
