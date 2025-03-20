@@ -82,13 +82,15 @@ yMax = max(allY(:));
 
 % Choice of markers, colors, and lines for plotting
 colors = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.9290 0.6940 0.1250], [0.2, 0.2, 0.2], [0.466, 0.674, 0.188]};
-lineStyles = {'-', '--',':', '-.', '-'};
+lineStyles = {'-', '--',':', '-.'};
 legendLabels = cell(1, param3);
 
 % Initialize index counter for accessing allY
 index = 1;
 
-for ll = 1:param3
+legendLabels{1} = "TRK";
+
+for ll = 2:param3
     legendLabels{ll} = strcat('$q =$ ', num2str(round(q_array(ll),4)));
 end
 
@@ -101,12 +103,18 @@ for i = 1:param1
 
         for h = 1:param3
             median_errs = allY(index,:,h);
-            plot(1:num_its+1, median_errs, 'Color', colors{h},'LineStyle', lineStyles{h}, 'LineWidth', 5);
+            if h > 4
+                plot(1:100:num_its+1, median_errs(1:100:num_its+1), 'Color', colors{h}, 'Marker', 'x', 'MarkerSize', 12, 'LineStyle', '-', 'LineWidth', 5.5);
+            elseif abs(beta_array(i) - (1 - q_array(h))) < 1e-7
+                plot(1:num_its+1, median_errs, 'Color', colors{h},'LineStyle', lineStyles{h}, 'LineWidth', 8);
+            else
+                plot(1:num_its+1, median_errs, 'Color', colors{h},'LineStyle', lineStyles{h}, 'LineWidth', 5);
+            end
         end
 
         % Set the y-axis to a logarithmic scale
         set(gca, 'YScale', 'log');
-    
+        
         % Set y-axis tick labels to be visible
         yticks([10^(-10), 10^0]);
 
@@ -115,7 +123,7 @@ for i = 1:param1
         xlabel('Iteration', 'interpreter','latex', FontSize=38);
         ylabel('Relative Error', 'interpreter','latex', FontSize=38);
         
-        if  (i == 1) && (j==1) % show legend only once 
+        if  (i == param1) && (j==1) % show legend only once 
             legend(legendLabels,'Interpreter','latex', 'FontSize', 34);
         end
 
