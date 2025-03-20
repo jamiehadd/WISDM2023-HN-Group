@@ -1,0 +1,17 @@
+Date and Time of Experiment: 18-Mar-2025 13:15:55
+Experiment Folder: 9050
+Algorithm: QTRK
+Dims: l = 5, p = 4, n = 10, m = 25
+Trials: 150, Iters: 2000
+Corr. dist. = 10, 5
+beta-row = 0.20000
+beta-row = 0.40000
+beta-row = 0.80000
+beta = 0.02500
+beta = 0.07500
+beta = 0.10000
+q = 1.00000
+q = 0.97500
+q = 0.92500
+q = 0.90000
+Wall-clock time (in sec):2652.781
