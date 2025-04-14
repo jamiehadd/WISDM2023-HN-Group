@@ -1,0 +1,14 @@
+Date and Time of Experiment: 18-Feb-2025 11:59:05
+Experiment Folder: 266
+Dims: l = 5, p = 4, n = 10, m = 25
+Trials: 150, Iters: 2000
+Corr. dist. = 100, 20
+beta-row = 0.40000
+beta-row = 0.80000
+beta = 0.02500
+beta = 0.07500
+beta = 0.10000
+q = 0.97500
+q = 0.92500
+q = 0.90000
+Wall-clock time (in sec):902.411
