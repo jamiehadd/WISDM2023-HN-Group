@@ -46,27 +46,30 @@ for i = 1:num_corrupt
     Y(row_idx, col_idx, depth_idx) = Y(row_idx, col_idx, depth_idx) + corruption_values(i);
 end
 
-% Creating a t-linear system corresponding to the deblurring problem
+% Re-order data tensors 
+Y_uncorrupted = reorder_tensor(Y_uncorrupted,[l,p,n]); % re-ordered (blurred video tensor)
+Y_reorder = reorder_tensor(Y,[l,p,n]); % re-ordered (blurred + corrupted video tensor) 
 
-Y_reorder = reorder_tensor(Y,[l,p,n]);
-Y_uncorrupted = reorder_tensor(Y_uncorrupted,[l,p,n]);
-
-
-%Defining the t-linear measurement operator
-A = circ_blurring_mxop(h, [l,p,n]);
-X0 = zeros(p,n,l);
+% Define t-linear measurement operator
+A = circ_blurring_mxop(h, [l,p,n]); 
+ 
 
 %% Run Algorithms
 
+% Initialization
+X0 = zeros(p,n,l);
+
 % Run QTRK
-[Z,QTRK_its] = QTRK_Algorithm(A,Y_reorder,X0,num_its, q);
-QTRK_errs = zeros(1,num_its+1);
+[Z,QTRK_its] = QTRK_Algorithm(A,Y_reorder,X0,num_its,q);
 Z_qtrk = recover_img(Z,[l,p,n]);
 
 % Run mQTRK
-[Z,mQTRK_its] = mQTRK_Algorithm(A,Y_reorder,X0,num_its, q);
-mQTRK_errs = zeros(1,num_its+1);
+[Z,mQTRK_its] = mQTRK_Algorithm(A,Y_reorder,X0,num_its,q);
 Z_mqtrk = recover_img(Z,[l,p,n]);
+
+% Compute errors
+QTRK_errs = zeros(1,num_its+1);
+mQTRK_errs = zeros(1,num_its+1);
 
 for i = 1:num_its + 1
     QTRK_res = tprod(A,QTRK_its{i}) - Y_uncorrupted;
@@ -75,16 +78,14 @@ for i = 1:num_its + 1
     mQTRK_errs(1,i) = norm(mQTRK_res(:))/norm(Y_uncorrupted(:));
 end
 
-Y_corrupted = recover_img(Y_reorder, [l,p,n]);
-
-
-%% Plot Results 
+%% Plot Frame Results 
 
 grid_fig = figure; 
-tiledlayout(5,4,'TileSpacing','none');
+tiledlayout(5,5,'TileSpacing','none');
 colormap gray
 
-for i = 1:4
+% Row 1: original frames
+for i = 1:5 
     nexttile;
     imagesc(X(:,:,i),[0,1]);
     title(sprintf('Frame %d',i), 'FontSize',13)
@@ -97,7 +98,9 @@ for i = 1:4
     set(gca,'Xticklabel',[])
 end
 
-for i = 1:4
+% Row 2: blurred + corrupted frames
+Y_corrupted = recover_img(Y_reorder, [l,p,n]);
+for i = 1:5 
     nexttile;
     imagesc(Y_corrupted(:,:,i));
     if i == 1
@@ -109,7 +112,8 @@ for i = 1:4
     set(gca,'Xticklabel',[])
 end
 
-for i = 1:4
+% Row 3: QTRK recovery frames
+for i = 1:5
     nexttile;
     imagesc(Z_qtrk(:,:,i),[0,1]);
     if i == 1
@@ -121,7 +125,8 @@ for i = 1:4
     set(gca,'Xticklabel',[])
 end
 
-for i = 1:4
+% Row 4: mQTRK recovery frames
+for i = 1:5
     nexttile;
     imagesc(Z_mqtrk(:,:,i),[0,1]);
     if i == 1
@@ -133,10 +138,10 @@ for i = 1:4
     set(gca,'Xticklabel',[])
 end
 
-% Calculate least-norm solution
+% Row 5: least-norm solution frame
 X_ln = tprod(tpinv(A),Y_reorder);
 X_ln = recover_img(X_ln,[l,p,n]);
-for i = 1:4
+for i = 1:5
     nexttile;
     imagesc(X_ln(:,:,i),[0,1]);
     if i == 1
@@ -152,14 +157,15 @@ end
 figFileName = fullfile(folderName, ['mQTRK_QTRK_deblurring','_exp_', num2str(exp_id), '.fig']);
 savefig(grid_fig, figFileName);
 
-set(gcf, 'Position', [100, 100, 300, 500]);  % [left, bottom, width, height]
+set(gcf, 'Position', [100, 100, 350, 500]);  % [left, bottom, width, height]
 pngFileName = fullfile(folderName, ['mQTRK_QTRK_deblurring','_exp_', num2str(exp_id), '.png']);
 print(gcf, pngFileName, '-dpng', '-r300');  % Adjust resolution as needed
 
 close(gcf);
 hold off
 
-% Plot Error Plots
+%% Plot Error Results
+
 % Choice of markers, colors, and lines for plotting
 colors = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980]};
 markers = {'o', '*'};
