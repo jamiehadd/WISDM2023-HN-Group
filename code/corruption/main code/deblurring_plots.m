@@ -28,14 +28,18 @@ end
 Y_uncorrupted = Y;
 
 % Generate random corruption values
+rng(42)
 corruption_values = abs(normrnd(mean_corrupt, deviation_corrupt, [num_corrupt, 1]));
 
 % Generate k random row indices to corrupt
+rng(3)
 corrupt_rows = randsample(l, k, false);
+fprintf("corrupt rows: %d %d %d %d %d %d", corrupt_rows)
 
 % Distribute num_corrupt corruptions uniformly across the k rows
 for i = 1:num_corrupt
     % Select a random row from the chosen rows
+    rng(i+17)
     row_idx = corrupt_rows(randsample(k, 1));
 
     % Randomly select indices for the other dimensions
@@ -174,8 +178,8 @@ lineStyles = {'-', ':'};
 error_fig = figure;
 hold on
 
-plot(1:100:num_its+1, QTRK_errs(1:100:num_its+1), 'Color', colors{1}, 'Marker', markers{1}, 'MarkerSize', 12, 'LineStyle', lineStyles{1}, 'LineWidth', 4);
-plot(1:100:num_its+1, mQTRK_errs(1:100:num_its+1), 'Color', colors{2}, 'Marker', markers{2}, 'MarkerSize', 12, 'LineStyle', lineStyles{2}, 'LineWidth', 4);
+plot(1:500:num_its+1, QTRK_errs(1:500:num_its+1), 'Color', colors{1}, 'Marker', markers{1}, 'MarkerSize', 12, 'LineStyle', lineStyles{1}, 'LineWidth', 4);
+plot(1:500:num_its+1, mQTRK_errs(1:500:num_its+1), 'Color', colors{2}, 'Marker', markers{2}, 'MarkerSize', 12, 'LineStyle', lineStyles{2}, 'LineWidth', 4);
 
 set(gca, 'YScale', 'log');
 
@@ -209,5 +213,10 @@ fprintf(discp,"numb. corrupt = %d\n", num_corrupt);
 fprintf(discp, "q = %.5f\n", q);
 fclose(discp);
 close all
+
+for i = 1:size(X,1)
+    err = X(i,:,:) - Z_qtrk(i,:,:);
+    fprintf("%d: %f\n", i, norm(err(:)))
+end
 
 end

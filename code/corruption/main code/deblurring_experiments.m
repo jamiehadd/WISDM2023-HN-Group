@@ -12,9 +12,13 @@ X = squeeze(double(D));                 % removes dimension 1 mode
 X = mat2gray(X(:,:,1:12));              % only first 12 frames   
 
 % Hyperparametes
-num_its = 2000; % number of iterations
+num_its = 10000; % number of iterations
 num_corrupt = 15; % number of corruption
+<<<<<<< Updated upstream
 q = 0.99; % quantile value
+=======
+q = 0.9999; % quantile value
+>>>>>>> Stashed changes
 k = 6; % number of corrupted rows
 
 % Corruptions magnitude distribution
