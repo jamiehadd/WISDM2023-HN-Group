@@ -14,16 +14,16 @@ X = mat2gray(X(:,:,1:12));              % only first 12 frames
 % Hyperparametes
 num_its = 10000; % number of iterations
 num_corrupt = 15; % number of corruption
-<<<<<<< Updated upstream
-q = 0.99; % quantile value
-=======
-q = 0.9999; % quantile value
->>>>>>> Stashed changes
+%<<<<<<< Updated upstream
+q = 0.9; % quantile value
+%=======
+%q = 0.9999; % quantile value
+%>>>>>>> Stashed changes
 k = 6; % number of corrupted rows
 
 % Corruptions magnitude distribution
-mean_corrupt = 3;
-deviation_corrupt = 2;
+mean_corrupt = 0.1;
+deviation_corrupt = 0.1;
 
 % Gaussian Filter
 h = fspecial('gaussian',[5,5],2);
