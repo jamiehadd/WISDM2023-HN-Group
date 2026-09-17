@@ -1,0 +1,7 @@
+Date and Time of Experiment: 16-Sep-2026 17:22:34
+Experiment Folder: 2390
+Dims: l = 128, p = 128, n = 12
+Corr. dist. = 7.500000e-01, 7.500000e-01
+k = 6
+numb. corrupt = 15
+q = 0.99900
