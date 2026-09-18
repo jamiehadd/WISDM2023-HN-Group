@@ -15,7 +15,7 @@ X = mat2gray(X(:,:,1:12));              % only first 12 frames
 num_its = 10000; % number of iterations
 num_corrupt = 15; % number of corruption
 %<<<<<<< Updated upstream
-q = 0.9; % quantile value
+q = 0.99; % quantile value
 %=======
 %q = 0.9999; % quantile value
 %>>>>>>> Stashed changes
@@ -29,5 +29,5 @@ deviation_corrupt = 0.1;
 h = fspecial('gaussian',[5,5],2);
 
 % Run Experiments
-deblurring_plots(X, h, num_its, num_corrupt, q, k, mean_corrupt, deviation_corrupt)
+duplicatedsystem_deblurring_plots(X, h, num_its, num_corrupt, q, k, mean_corrupt, deviation_corrupt)
 

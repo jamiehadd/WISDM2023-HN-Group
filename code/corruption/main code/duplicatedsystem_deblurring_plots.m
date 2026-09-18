@@ -1,0 +1,226 @@
+function duplicatedsystem_deblurring_plots(X, h, num_its, num_corrupt, q, k, mean_corrupt, deviation_corrupt)
+
+% Shuffle state
+rngState = rng('shuffle'); 
+
+% Create a new folder to the save figure
+exp_id = randi([1, 9999]);
+folderName = ['exp-',num2str(exp_id)] ;
+if ~exist(folderName, 'dir') % check it does not exist
+    mkdir(folderName);
+end
+
+disp("Experiment Folder: " + exp_id);
+
+% Save state
+save(fullfile(folderName,'rngState.mat'), 'rngState');
+
+%% Set up the Problem
+
+% Pull given dimensions
+[l,p,n] = size(X);
+
+% Create circularly blurred images
+Y = zeros(l,p,n);
+for i = 1:n
+    Y(:,:,i) = blurryimage(X(:,:,i), h, [l,p]);
+end
+Y_uncorrupted = Y;
+
+% Generate random corruption values
+rng(42)
+corruption_values = abs(normrnd(mean_corrupt, deviation_corrupt, [num_corrupt, 1]));
+
+% Generate k random row indices to corrupt
+rng(3)
+corrupt_rows = randsample(l, k, false);
+fprintf("corrupt rows: %d %d %d %d %d %d", corrupt_rows)
+
+% Distribute num_corrupt corruptions uniformly across the k rows
+for i = 1:num_corrupt
+    % Select a random row from the chosen rows
+    rng(i+17)
+    row_idx = corrupt_rows(randsample(k, 1));
+
+    % Randomly select indices for the other dimensions
+    col_idx = randsample(p, 1);
+    depth_idx = randsample(n, 1);
+
+    % Apply the corruption value
+    Y(row_idx, col_idx, depth_idx) = Y(row_idx, col_idx, depth_idx) + corruption_values(i);
+end
+
+% Re-order data tensors 
+Y_uncorrupted = reorder_tensor(Y_uncorrupted,[l,p,n]); % re-ordered (blurred video tensor)
+Y_reorder = reorder_tensor(Y,[l,p,n]); % re-ordered (blurred + corrupted video tensor) 
+
+% Define t-linear measurement operator
+A = circ_blurring_mxop(h, [l,p,n]); 
+A_dup = [A;A];
+size(A_dup)
+Y_dup = [Y_reorder;Y_uncorrupted];
+size(Y_dup)
+ 
+
+%% Run Algorithms
+
+% Initialization
+X0 = zeros(p,n,l);
+
+% Run QTRK
+[Z,QTRK_its] = QTRK_Algorithm(A_dup,Y_dup,X0,num_its,q);
+Z_qtrk = recover_img(Z,[l,p,n]);
+
+% Run mQTRK
+[Z,mQTRK_its] = mQTRK_Algorithm(A_dup,Y_dup,X0,num_its,q);
+Z_mqtrk = recover_img(Z,[l,p,n]);
+
+% Compute errors
+QTRK_errs = zeros(1,num_its+1);
+mQTRK_errs = zeros(1,num_its+1);
+
+for i = 1:num_its + 1
+    QTRK_res = tprod(A,QTRK_its{i}) - Y_uncorrupted;
+    QTRK_errs(1,i) = norm(QTRK_res(:))/norm(Y_uncorrupted(:));
+    mQTRK_res = tprod(A,mQTRK_its{i}) - Y_uncorrupted;
+    mQTRK_errs(1,i) = norm(mQTRK_res(:))/norm(Y_uncorrupted(:));
+end
+
+%% Plot Frame Results 
+
+grid_fig = figure; 
+tiledlayout(5,5,'TileSpacing','none');
+colormap gray
+
+% Row 1: original frames
+for i = 1:5 
+    nexttile;
+    imagesc(X(:,:,i),[0,1]);
+    title(sprintf('Frame %d',i), 'FontSize',13)
+    if i == 1
+        ylabel("Original",'FontSize',12);
+    end
+    grid off
+    set(gca,'TickLength',[0 0])
+    set(gca,'Yticklabel',[]) 
+    set(gca,'Xticklabel',[])
+end
+
+% Row 2: blurred + corrupted frames
+Y_corrupted = recover_img(Y_reorder, [l,p,n]);
+for i = 1:5 
+    nexttile;
+    imagesc(Y_corrupted(:,:,i));
+    if i == 1
+        ylabel("Blurry & Corrupted",'FontSize',12);
+    end
+    grid off
+    set(gca,'TickLength',[0 0])
+    set(gca,'Yticklabel',[]) 
+    set(gca,'Xticklabel',[])
+end
+
+% Row 3: QTRK recovery frames
+for i = 1:5
+    nexttile;
+    imagesc(Z_qtrk(:,:,i),[0,1]);
+    if i == 1
+        ylabel("QTRK",'FontSize',12);
+    end
+    grid off
+    set(gca,'TickLength',[0 0])
+    set(gca,'Yticklabel',[]) 
+    set(gca,'Xticklabel',[])
+end
+
+% Row 4: mQTRK recovery frames
+for i = 1:5
+    nexttile;
+    imagesc(Z_mqtrk(:,:,i),[0,1]);
+    if i == 1
+        ylabel("mQTRK",'FontSize',12);
+    end
+    grid off
+    set(gca,'TickLength',[0 0])
+    set(gca,'Yticklabel',[]) 
+    set(gca,'Xticklabel',[])
+end
+
+% Row 5: least-norm solution frame
+X_ln = tprod(tpinv(A_dup),Y_dup);
+X_ln = recover_img(X_ln,[l,p,n]);
+for i = 1:5
+    nexttile;
+    imagesc(X_ln(:,:,i),[0,1]);
+    if i == 1
+        ylabel("Least Norm",'FontSize',12);
+    end
+    grid off
+    set(gca,'TickLength',[0 0])
+    set(gca,'Yticklabel',[]) 
+    set(gca,'Xticklabel',[])
+end
+
+% Save figures
+figFileName = fullfile(folderName, ['mQTRK_QTRK_deblurring','_exp_', num2str(exp_id), '.fig']);
+savefig(grid_fig, figFileName);
+
+set(gcf, 'Position', [100, 100, 350, 500]);  % [left, bottom, width, height]
+pngFileName = fullfile(folderName, ['mQTRK_QTRK_deblurring','_exp_', num2str(exp_id), '.png']);
+print(gcf, pngFileName, '-dpng', '-r300');  % Adjust resolution as needed
+
+close(gcf);
+hold off
+
+%% Plot Error Results
+
+% Choice of markers, colors, and lines for plotting
+colors = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980]};
+markers = {'o', '*'};
+lineStyles = {'-', ':'};
+
+error_fig = figure;
+hold on
+
+plot(1:500:num_its+1, QTRK_errs(1:500:num_its+1), 'Color', colors{1}, 'Marker', markers{1}, 'MarkerSize', 12, 'LineStyle', lineStyles{1}, 'LineWidth', 4);
+plot(1:500:num_its+1, mQTRK_errs(1:500:num_its+1), 'Color', colors{2}, 'Marker', markers{2}, 'MarkerSize', 12, 'LineStyle', lineStyles{2}, 'LineWidth', 4);
+
+set(gca, 'YScale', 'log');
+
+% Set font size for tick labels and texts
+set(gca, 'FontSize', 24); %tick labels
+xlabel('Iteration', 'interpreter','latex', FontSize=30);
+ylabel('Relative Error', 'interpreter','latex', FontSize=30);
+legend({'QTRK', 'mQTRK'},'Interpreter','latex', 'FontSize', 24, 'Location','northeast');
+
+% Save figures
+figFileName = fullfile(folderName, ['mQTRK_QTRK_deblurring_error','_exp_', num2str(exp_id), '.fig']);
+savefig(error_fig, figFileName);
+
+set(gcf, 'Position', [100, 100, 500, 400]);  % [left, bottom, width, height]
+pngFileName = fullfile(folderName, ['mQTRK_QTRK_deblurring_error','_exp_', num2str(exp_id), '.png']);
+print(gcf, pngFileName, '-dpng', '-r300');  % Adjust resolution as needed
+
+close(gcf);
+hold off
+close all;
+
+dt = datetime;
+filePath = fullfile(folderName, 'parameters.txt');
+discp = fopen(filePath, 'w' );
+fprintf(discp, "Date and Time of Experiment: %s\n", dt);
+fprintf(discp, "Experiment Folder: %d\n", exp_id);
+fprintf(discp,"Dims: l = %d, p = %d, n = %d\n", l, p, n);
+fprintf(discp,"Corr. dist. = %d, %d\n", mean_corrupt, deviation_corrupt);
+fprintf(discp,"k = %d\n", k);
+fprintf(discp,"numb. corrupt = %d\n", num_corrupt);
+fprintf(discp, "q = %.5f\n", q);
+fclose(discp);
+close all
+
+for i = 1:size(X,1)
+    err = X(i,:,:) - Z_qtrk(i,:,:);
+    fprintf("%d: %f\n", i, norm(err(:)))
+end
+
+end
