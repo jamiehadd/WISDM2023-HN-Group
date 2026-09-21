@@ -1,4 +1,4 @@
-function duplicatedsystem_deblurring_plots(X, h, num_its, num_corrupt, q, k, mean_corrupt, deviation_corrupt)
+function occluded_deblurring_plots(X, h, num_its, num_corrupt, q, k, mean_corrupt, deviation_corrupt)
 
 % Shuffle state
 rngState = rng('shuffle'); 
@@ -27,28 +27,20 @@ for i = 1:n
 end
 Y_uncorrupted = Y;
 
+
 % Generate random corruption values
 rng(42)
 corruption_values = abs(normrnd(mean_corrupt, deviation_corrupt, [num_corrupt, 1]));
 
-% Generate k random row indices to corrupt
-rng(3)
-corrupt_rows = randsample(l, k, false);
-fprintf("corrupt rows: %d %d %d %d %d %d", corrupt_rows)
-
 % Distribute num_corrupt corruptions uniformly across the k rows
 for i = 1:num_corrupt
-    % Select a random row from the chosen rows
-    rng(i+17)
-    row_idx = corrupt_rows(randsample(k, 1));
-
-    % Randomly select indices for the other dimensions
-    col_idx = randsample(p, 1);
-    depth_idx = randsample(n, 1);
 
     % Apply the corruption value
-    Y(row_idx, col_idx, depth_idx) = Y(row_idx, col_idx, depth_idx) + corruption_values(i);
+    Y(60, 10*i, i) = corruption_values(i);
 end
+
+
+
 
 % Re-order data tensors 
 Y_uncorrupted = reorder_tensor(Y_uncorrupted,[l,p,n]); % re-ordered (blurred video tensor)
@@ -56,10 +48,6 @@ Y_reorder = reorder_tensor(Y,[l,p,n]); % re-ordered (blurred + corrupted video t
 
 % Define t-linear measurement operator
 A = circ_blurring_mxop(h, [l,p,n]); 
-A_dup = [A;A];
-size(A_dup)
-Y_dup = [Y_reorder;Y_uncorrupted];
-size(Y_dup)
  
 
 %% Run Algorithms
@@ -68,37 +56,21 @@ size(Y_dup)
 X0 = zeros(p,n,l);
 
 % Run QTRK
-[Z_QTRK,QTRK_its] = QTRK_Algorithm(A_dup,Y_dup,X0,num_its/2,q);
-Z_qtrk = recover_img(Z_QTRK,[l,p,n]);
+[Z,QTRK_its] = QTRK_Algorithm(A,Y_reorder,X0,num_its,q);
+Z_qtrk = recover_img(Z,[l,p,n]);
 
 % Run mQTRK
-[Z_mQTRK,mQTRK_its] = mQTRK_Algorithm(A_dup,Y_dup,X0,num_its/2,q);
-Z_mqtrk = recover_img(Z_mQTRK,[l,p,n]);
+[Z,mQTRK_its] = mQTRK_Algorithm(A,Y_reorder,X0,num_its,q);
+Z_mqtrk = recover_img(Z,[l,p,n]);
 
 % Compute errors
 QTRK_errs = zeros(1,num_its+1);
 mQTRK_errs = zeros(1,num_its+1);
 
-for i = 1:num_its/2 + 1
+for i = 1:num_its + 1
     QTRK_res = tprod(A,QTRK_its{i}) - Y_uncorrupted;
     QTRK_errs(1,i) = norm(QTRK_res(:))/norm(Y_uncorrupted(:));
     mQTRK_res = tprod(A,mQTRK_its{i}) - Y_uncorrupted;
-    mQTRK_errs(1,i) = norm(mQTRK_res(:))/norm(Y_uncorrupted(:));
-end
-
-%%second half
-% Run QTRK
-[Z,QTRK_its] = QTRK_Algorithm(A_dup,Y_dup,Z_QTRK,num_its/2,q);
-Z_qtrk = recover_img(Z,[l,p,n]);
-
-% Run mQTRK
-[Z,mQTRK_its] = mQTRK_Algorithm(A_dup,Y_dup,Z_mQTRK,num_its/2,q);
-Z_mqtrk = recover_img(Z,[l,p,n]);
-
-for i = num_its/2 + 1: num_its + 1
-    QTRK_res = tprod(A,QTRK_its{i-num_its/2}) - Y_uncorrupted;
-    QTRK_errs(1,i) = norm(QTRK_res(:))/norm(Y_uncorrupted(:));
-    mQTRK_res = tprod(A,mQTRK_its{i-num_its/2}) - Y_uncorrupted;
     mQTRK_errs(1,i) = norm(mQTRK_res(:))/norm(Y_uncorrupted(:));
 end
 
@@ -163,7 +135,7 @@ for i = 1:5
 end
 
 % Row 5: least-norm solution frame
-X_ln = tprod(tpinv(A_dup),Y_dup);
+X_ln = tprod(tpinv(A),Y_reorder);
 X_ln = recover_img(X_ln,[l,p,n]);
 for i = 1:5
     nexttile;

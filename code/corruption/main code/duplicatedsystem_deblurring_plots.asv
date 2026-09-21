@@ -68,12 +68,12 @@ size(Y_dup)
 X0 = zeros(p,n,l);
 
 % Run QTRK
-[Z_QTRK,QTRK_its] = QTRK_Algorithm(A_dup,Y_dup,X0,num_its/2,q);
-Z_qtrk = recover_img(Z_QTRK,[l,p,n]);
+[Z,QTRK_its] = QTRK_Algorithm(A_dup,Y_dup,X0,num_its/2,q);
+Z_qtrk = recover_img(Z,[l,p,n]);
 
 % Run mQTRK
-[Z_mQTRK,mQTRK_its] = mQTRK_Algorithm(A_dup,Y_dup,X0,num_its/2,q);
-Z_mqtrk = recover_img(Z_mQTRK,[l,p,n]);
+[Z,mQTRK_its] = mQTRK_Algorithm(A_dup,Y_dup,X0,num_its/2,q);
+Z_mqtrk = recover_img(Z,[l,p,n]);
 
 % Compute errors
 QTRK_errs = zeros(1,num_its+1);
@@ -83,22 +83,6 @@ for i = 1:num_its/2 + 1
     QTRK_res = tprod(A,QTRK_its{i}) - Y_uncorrupted;
     QTRK_errs(1,i) = norm(QTRK_res(:))/norm(Y_uncorrupted(:));
     mQTRK_res = tprod(A,mQTRK_its{i}) - Y_uncorrupted;
-    mQTRK_errs(1,i) = norm(mQTRK_res(:))/norm(Y_uncorrupted(:));
-end
-
-%%second half
-% Run QTRK
-[Z,QTRK_its] = QTRK_Algorithm(A_dup,Y_dup,Z_QTRK,num_its/2,q);
-Z_qtrk = recover_img(Z,[l,p,n]);
-
-% Run mQTRK
-[Z,mQTRK_its] = mQTRK_Algorithm(A_dup,Y_dup,Z_mQTRK,num_its/2,q);
-Z_mqtrk = recover_img(Z,[l,p,n]);
-
-for i = num_its/2 + 1: num_its + 1
-    QTRK_res = tprod(A,QTRK_its{i-num_its/2}) - Y_uncorrupted;
-    QTRK_errs(1,i) = norm(QTRK_res(:))/norm(Y_uncorrupted(:));
-    mQTRK_res = tprod(A,mQTRK_its{i-num_its/2}) - Y_uncorrupted;
     mQTRK_errs(1,i) = norm(mQTRK_res(:))/norm(Y_uncorrupted(:));
 end
 
