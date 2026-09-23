@@ -1,0 +1,9 @@
+Date and Time of Experiment: 19-Aug-2026 14:34:28
+Experiment Folder: 6482
+Dims: l = 5, p = 4, n = 10, m = 25
+Block sizes: [1 2 3 4 5]
+Trials: 150, Iters: 2000
+q = 0.97500
+num_corrupt = 25, num_rowcorrupt = 5
+mean_corrupt = 100.000, deviation_corrupt = 20.000
+Wall-clock time (in sec): 388.405

@@ -1,1 +1,12 @@
-The experiments included in the paper have ids: 7866, 9050, 2698, 4775, 266.
+The ids of the experiments included in the paper:
+
+QTRK: 7866, 9050
+mQTRK: 2698, 4775
+Comparison: 266, 615
+Deblurring: See deblurring folder
+BatchQTRK: 138, 2780
+BlockQTRK: 610, 6482
+QTRK-RS: 3044, 9400
+
+
+
