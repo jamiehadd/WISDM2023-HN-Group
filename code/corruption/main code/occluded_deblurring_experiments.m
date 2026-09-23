@@ -13,21 +13,21 @@ X = mat2gray(X(:,:,1:12));              % only first 12 frames
 
 % Hyperparametes
 num_its = 10000; % number of iterations
-num_corrupt = 15; % number of corruption
+num_corrupt = 10; % number of corruption
 %<<<<<<< Updated upstream
 q = 0.9; % quantile value
 %=======
 %q = 0.9999; % quantile value
 %>>>>>>> Stashed changes
-k = 6; % number of corrupted rows
+k = 1; % number of corrupted rows
 
 % Corruptions magnitude distribution
-mean_corrupt = 0.1;
-deviation_corrupt = 0.1;
+mean_corrupt = 1;
+deviation_corrupt = 0;
 
 % Gaussian Filter
 h = fspecial('gaussian',[5,5],2);
 
 % Run Experiments
-deblurring_plots(X, h, num_its, num_corrupt, q, k, mean_corrupt, deviation_corrupt)
+occluded_deblurring_plots(X, h, num_its, num_corrupt, q, k, mean_corrupt, deviation_corrupt)
 
