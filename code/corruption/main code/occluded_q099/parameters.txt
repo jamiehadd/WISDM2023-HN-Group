@@ -1,5 +1,5 @@
-Date and Time of Experiment: 21-Sep-2026 15:58:29
-Experiment Folder: 313
+Date and Time of Experiment: 22-Sep-2026 10:04:06
+Experiment Folder: 1330
 Dims: l = 128, p = 128, n = 12
 Corr. dist. = 1, 0
 k = 1

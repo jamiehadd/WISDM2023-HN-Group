@@ -15,7 +15,7 @@ X = mat2gray(X(:,:,1:12));              % only first 12 frames
 num_its = 10000; % number of iterations
 num_corrupt = 10; % number of corruption
 %<<<<<<< Updated upstream
-q = 0.9; % quantile value
+q = 1; % quantile value
 %=======
 %q = 0.9999; % quantile value
 %>>>>>>> Stashed changes
